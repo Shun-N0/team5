@@ -53,11 +53,9 @@ public class ClearManager : MonoBehaviour
         rankingText.text = text;
     }
 
-    // リトライボタン用：ゲーム本編（SampleScene）へ
     public void RetryGame()
     {
-        Time.timeScale = 1f; // 時間を動かす
-        SceneManager.LoadScene("SampleScene");
+        RetrySceneStorage.LoadRetryScene();
     }
 
     // タイトルボタン用：タイトル画面（Title Scene）へ

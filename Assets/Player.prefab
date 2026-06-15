@@ -112,6 +112,7 @@ MonoBehaviour:
   yMax: 4.5
   bulletPrefab: {fileID: 5339789313867460059, guid: 903b07093ae4146dba99d22133612d11, type: 3}
   shotInterval: 0.1
+  attackPower: 1
   lives: 3
   lifeIcons:
   - {fileID: 0}

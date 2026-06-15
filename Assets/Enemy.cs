@@ -5,6 +5,8 @@ public class Enemy : MonoBehaviour
     [Header("移動設定")]
     public float speed = 2f;
     public float descentSpeed = 0.5f;
+    public float minDescentSpeed = 0.8f;
+    public float maxDescentSpeed = 1.8f;
     private int direction = 1;
 
     [Header("攻撃設定")]
@@ -35,6 +37,11 @@ public class Enemy : MonoBehaviour
     public float minScale = 0.5f;
     public float maxScale = 1.5f;
 
+    [Header("体力・スコア設定")]
+    public int maxHealth = 1;
+    public int scoreValue = 100;
+    private int currentHealth;
+
     [Header("サウンド設定")]
     public AudioClip killSound;
     [Range(0, 1)] public float killVolume = 1.0f;
@@ -45,8 +52,9 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
+        currentHealth = maxHealth;
         InitializeEnemy();
-        timer = Random.Range(0f, shotInterval);
+        timer = Random.Range(0f, currentShotInterval);
     }
 
     void Update()
@@ -118,7 +126,7 @@ public class Enemy : MonoBehaviour
         currentShotInterval = Random.Range(minShotInterval, maxShotInterval);
         
         speed = Random.Range(1f, 4f);
-        descentSpeed = Random.Range(0.3f, 1.2f);
+        descentSpeed = Random.Range(minDescentSpeed, maxDescentSpeed);
         timer = 0;
         direction = (Random.value > 0.5f) ? 1 : -1;
     }
@@ -127,22 +135,32 @@ public class Enemy : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Bullet"))
         {
-            // ★追加：爆発エフェクトを今の位置に作り出す
-            if (explosionPrefab != null)
-            {
-                Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-            }
+            Bullet bullet = collision.gameObject.GetComponent<Bullet>();
+            int damage = bullet != null ? bullet.attackPower : 1;
 
-            // サウンド再生（StageManager経由）
-            if (killSound != null && StageManager.Instance != null)
-            {
-                StageManager.Instance.PlaySE(killSound, killVolume);
-            }
-
-            Debug.Log("敵を撃破！");
-            Destroy(collision.gameObject); // 当たった弾を消す
-            StageManager.Instance?.AddKill(); // スコア加算
-            Destroy(gameObject); // 敵自身を消す
+            Destroy(collision.gameObject);
+            TakeDamage(damage);
         }
+    }
+
+    void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth > 0) return;
+
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (killSound != null && StageManager.Instance != null)
+        {
+            StageManager.Instance.PlaySE(killSound, killVolume);
+        }
+
+        Debug.Log("敵を撃破！");
+        StageManager.Instance?.AddScore(scoreValue);
+        Destroy(gameObject);
     }
 }

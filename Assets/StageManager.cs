@@ -26,6 +26,7 @@ public class StageManager : MonoBehaviour
     [SerializeField] private GameObject[] hpCircles; 
 
     private bool cleared;
+    private bool gameOver;
 
     // ★追加：SE再生用のコンポーネント
     private AudioSource seAudioSource;
@@ -33,6 +34,7 @@ public class StageManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        RetrySceneStorage.SaveCurrentScene();
         // ★追加：自分自身にSE専用のAudioSourceを付ける
         seAudioSource = gameObject.AddComponent<AudioSource>();
     }
@@ -86,6 +88,13 @@ public class StageManager : MonoBehaviour
 
         // クリア専用シーンへ遷移
         SceneManager.LoadScene("Clear Game");
+    }
+
+    public void TriggerGameOver()
+    {
+        if (gameOver) return;
+        gameOver = true;
+        SceneManager.LoadScene("GameOverScene");
     }
 
     // スコアを既存ランキングに追加し、上位 MaxRankingCount 件のみ保存する

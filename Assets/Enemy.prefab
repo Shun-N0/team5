@@ -107,10 +107,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 2
   descentSpeed: 0.5
+  minDescentSpeed: 0.8
+  maxDescentSpeed: 1.8
   enemyBulletPrefab: {fileID: 9028439366270882026, guid: b27883967321e4e468e2ad2b9ebd95d6, type: 3}
   shotInterval: 1000
-  minShotInterval: 1.5
-  maxShotInterval: 1.5
+  minShotInterval: 0.7
+  maxShotInterval: 1.1
   bulletSpeed: 1
   bulletScaleRatio: 1.4
   spawnYOffset: 1
@@ -118,6 +120,8 @@ MonoBehaviour:
   maxMoveXRange: 2.5
   minScale: 0.1
   maxScale: 0.3
+  maxHealth: 1
+  scoreValue: 100
   killSound: {fileID: 8300000, guid: dbabc3d1759b14fd2aa1698cb30c7ded, type: 3}
   killVolume: 0.1
   explosionPrefab: {fileID: 8408093115305735814, guid: a9d1d247b7e02459389c0f86d5394991, type: 3}

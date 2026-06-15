@@ -3,6 +3,7 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     public float speed = 10f;
+    public int attackPower = 1;
 
     void Update()
     {
@@ -14,5 +15,13 @@ public class Bullet : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("EnemyBullet")) return;
+
+        Destroy(collision.gameObject);
+        Destroy(gameObject);
     }
 }
