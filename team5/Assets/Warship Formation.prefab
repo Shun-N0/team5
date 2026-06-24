@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6100000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6100000000000000002}
+  - component: {fileID: 6100000000000000003}
+  m_Layer: 0
+  m_Name: Warship Formation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6100000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6100000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d74c2d9b93df41c7b95becaef934e283, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::WarshipFormation
+  warshipSprite: {fileID: 21300000, guid: d619c4840c97344beacc0a9c89b172fa, type: 3}
+  unitColor: {r: 1, g: 1, b: 1, a: 1}
+  enemyBulletPrefab: {fileID: 9028439366270882026, guid: b27883967321e4e468e2ad2b9ebd95d6, type: 3}
+  explosionPrefab: {fileID: 8408093115305735814, guid: a9d1d247b7e02459389c0f86d5394991, type: 3}
+  killSound: {fileID: 8300000, guid: dbabc3d1759b14fd2aa1698cb30c7ded, type: 3}
+  unitHealth: 2
+  unitScore: 250
+  unitScale: 0.7
+  formationType: 0
+  horizontalSpeed: 1.2
+  descentSpeed: 0.75
+  xLimit: 1.25
+  spawnYOffset: 1.4
+  synchronizedShotInterval: 1.8
+  bulletSpeed: 2.4
+  bulletScale: 0.45
