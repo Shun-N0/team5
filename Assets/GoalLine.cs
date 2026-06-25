@@ -2,41 +2,51 @@ using UnityEngine;
 
 public class GoalLine : MonoBehaviour
 {
-    [Tooltip("BackgroundScroller の scrollSpeed と同じ値にしてください")]
+    [Tooltip("降りてくるスピード")]
     public float scrollSpeed = 3f;
 
-    [Tooltip("ゲーム開始時の画面上端から何ユニット先にゴールを置くか")]
-    public float stageLength = 50f;
+    [Tooltip("出現したとき、画面上端からどれくらい上に置くか（1〜2がおすすめ）")]
+    public float appearOffset = 1.0f;
 
     void Start()
     {
+        // --- 出現時の位置合わせ ---
         Camera cam = Camera.main;
         float screenWidth = cam.orthographicSize * 2f * cam.aspect;
-        float startY = cam.transform.position.y + cam.orthographicSize + stageLength;
-
+        
+        // ★修正：遠く（50）ではなく、画面のすぐ上（appearOffset）にセットする
+        float startY = cam.transform.position.y + cam.orthographicSize + appearOffset;
         transform.position = new Vector3(cam.transform.position.x, startY, 0f);
 
-        // ゴール帯ビジュアル（黄色）
+        // ビジュアル設定
         var sr = GetComponent<SpriteRenderer>() ?? gameObject.AddComponent<SpriteRenderer>();
-        sr.sprite = MakeSprite(new Color(1f, 0.85f, 0f));
-        sr.sortingOrder = 5;
+        // もし画像がNoneなら、ここで白い四角を生成して色を塗る
+        if (sr.sprite == null) {
+            sr.sprite = MakeSprite(Color.white);
+        }
+        sr.color = new Color(1f, 0.85f, 0f); // 金色
+        sr.sortingOrder = 10; // 一番手前に表示
         transform.localScale = new Vector3(screenWidth * 1.2f, 0.5f, 1f);
 
-        // トリガー判定
+        // 当たり判定の設定
         var col = GetComponent<BoxCollider2D>() ?? gameObject.AddComponent<BoxCollider2D>();
         col.isTrigger = true;
-        col.size = Vector2.one; // スケール込みで screenWidth x 0.5 になる
     }
 
     void Update()
     {
+        // 常に下に降りてくる
         transform.Translate(Vector3.down * scrollSpeed * Time.deltaTime);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        // プレイヤーに触れたらクリア！
         if (other.CompareTag("Player"))
+        {
+            Debug.Log("ゴールに到達！");
             StageManager.Instance?.TriggerClear();
+        }
     }
 
     Sprite MakeSprite(Color color)

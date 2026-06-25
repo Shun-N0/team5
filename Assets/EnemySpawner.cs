@@ -2,12 +2,19 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public GameObject enemyPrefab;         // 四角い敵のプレハブ
-    public GameObject triangleEnemyPrefab; // 三角の敵のプレハブ
+    // 外部からこのスポナーにアクセスできるようにする（重要！）
+    public static EnemySpawner Instance { get; private set; }
+
+    public GameObject enemyPrefab;         
+    public GameObject triangleEnemyPrefab; 
 
     [Header("耐久敵設定")]
     public GameObject tankEnemyPrefab;
     [Range(0f, 1f)] public float tankEnemySpawnChance = 0.2f;
+
+    [Header("スタン敵設定")]
+    public GameObject stunEnemyPrefab;
+    [Range(0f, 1f)] public float stunEnemySpawnChance = 0.15f; 
 
     [Header("軍艦編隊設定")]
     public GameObject warshipFormationPrefab;
@@ -18,25 +25,33 @@ public class EnemySpawner : MonoBehaviour
     public float redWarshipInitialDelay = 4f;
 
     [Header("初期スポーン設定")]
-    public float initialSpawnInterval = 3.0f; // 最初の出現間隔（秒）
+    public float initialSpawnInterval = 3.0f; 
 
     [Header("敵数管理")]
-    public int targetEnemyCount = 5; // 画面上に維持したい敵の数
+    public int targetEnemyCount = 5; 
 
     [Header("難易度上昇設定")]
-    public float minSpawnInterval = 0.8f;     // 出現間隔の最小値（これ以上は速くならない）
-    public float difficultyInterval = 15.0f;  // 何秒おきに難易度を上げるか
-    public float spawnIntervalDecrement = 0.3f; // 1段階ごとに縮める秒数
+    public float minSpawnInterval = 0.8f;     
+    public float difficultyInterval = 15.0f;  
+    public float spawnIntervalDecrement = 0.3f; 
 
-    private float currentSpawnInterval;  // 現在の出現間隔
-    private float spawnTimer = 0f;       // 次の敵を出すまでのタイマー
-    private float difficultyTimer = 0f;  // 次の難易度上昇までのタイマー
+    private float currentSpawnInterval;  
+    private float spawnTimer = 0f;       
+    private float difficultyTimer = 0f;  
     private float blueWarshipTimer;
     private float redWarshipTimer;
 
+    // ★追加：ボスの間、生成を止めるためのフラグ
+    private bool isSpawningStopped = false;
+
+    void Awake()
+    {
+        // シングルトン設定（外部から呼びやすくするため）
+        if (Instance == null) Instance = this;
+    }
+
     void Start()
     {
-        // 最初の出現間隔をセット
         currentSpawnInterval = initialSpawnInterval;
         blueWarshipTimer = blueWarshipInitialDelay;
         redWarshipTimer = redWarshipInitialDelay;
@@ -44,23 +59,26 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
+        // ★追加：生成が停止されている場合は、何もしない（他のシーンでは常にfalseなので干渉しません）
+        if (isSpawningStopped) return;
+
         // --- 難易度上昇タイマー ---
         difficultyTimer += Time.deltaTime;
         if (difficultyTimer >= difficultyInterval)
         {
             difficultyTimer = 0f;
-            // 出現間隔を短くする（minSpawnInterval を下回らないようにクランプ）
             currentSpawnInterval = Mathf.Max(currentSpawnInterval - spawnIntervalDecrement, minSpawnInterval);
             Debug.Log("難易度アップ！出現間隔: " + currentSpawnInterval + "秒");
         }
 
         // --- 敵のスポーンタイマー ---
-        // 画面上の敵が少ないほどスポーン間隔を短くして敵数を一定に保つ
         int currentEnemyCount = FindObjectsByType<Enemy>(FindObjectsSortMode.None).Length;
-        currentEnemyCount += FindObjectsByType<WarshipUnit>(FindObjectsSortMode.None).Length;
+        // WarshipUnitのカウント（もしスクリプトが存在しなければ無視されます）
+        // currentEnemyCount += FindObjectsByType<WarshipUnit>(FindObjectsSortMode.None).Length;
+
         float adjustedInterval = currentEnemyCount < targetEnemyCount
-            ? currentSpawnInterval * 0.3f  // 敵が少ないときは早めにスポーン
-            : currentSpawnInterval;        // 十分いるときは通常間隔
+            ? currentSpawnInterval * 0.3f  
+            : currentSpawnInterval;        
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer >= adjustedInterval)
@@ -72,6 +90,13 @@ public class EnemySpawner : MonoBehaviour
         UpdateWarshipSpawns();
     }
 
+    // ★追加：外部（StageManagerなど）から生成を止めるための命令
+    public void StopSpawning()
+    {
+        isSpawningStopped = true;
+        Debug.Log("ボス出現のため、ザコ敵の生成を停止しました。");
+    }
+
     void SpawnEnemy()
     {
         if (tankEnemyPrefab != null && Random.value < tankEnemySpawnChance)
@@ -80,15 +105,20 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        // 出す敵の種類をランダムに選ぶ（四角か三角か）
+        if (stunEnemyPrefab != null && Random.value < stunEnemySpawnChance)
+        {
+            Instantiate(stunEnemyPrefab, Vector3.zero, Quaternion.identity);
+            return;
+        }
+
         GameObject prefabToSpawn = Random.value > 0.5f ? enemyPrefab : triangleEnemyPrefab;
 
         if (prefabToSpawn != null)
         {
-            // 敵を生成（位置はEnemyスクリプトのStartで決まるのでゼロ地点でOK）
             Instantiate(prefabToSpawn, Vector3.zero, Quaternion.identity);
         }
     }
+
 
     private void UpdateWarshipSpawns()
     {
