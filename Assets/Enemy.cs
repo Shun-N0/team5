@@ -18,12 +18,10 @@ public class Enemy : MonoBehaviour
     public float minShotInterval = 1.0f;
     public float maxShotInterval = 3.0f;
     private float currentShotInterval;
-    // 弾速：全敵で共通の固定値（同じ種類の敵なら同じスピード）
     public float bulletSpeed = 3f;
     private float currentBulletSpeed;
 
     [Header("弾の大きさ設定")]
-    // 弾サイズは敵サイズに対する比率で決定（大きい敵→大きい弾、小さい敵→小さい弾）
     public float bulletScaleRatio = 5f;
     private float currentBulletScale;
 
@@ -46,9 +44,13 @@ public class Enemy : MonoBehaviour
     public AudioClip killSound;
     [Range(0, 1)] public float killVolume = 1.0f;
 
-    // ★追加：エフェクト設定
     [Header("エフェクト設定")]
-    public GameObject explosionPrefab; // 爆発パーティクルのプレハブ
+    public GameObject explosionPrefab; 
+
+    // ★追加：アイテムドロップ設定
+    [Header("アイテムドロップ設定")]
+    public GameObject itemPrefab; // 落としたいアイテムのプレハブ
+    [Range(0f, 1f)] public float dropChance = 0.2f; // アイテムが落ちる確率 (0.2 = 20%)
 
     void Start()
     {
@@ -59,7 +61,6 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        // 1. 移動処理
         float xMove = direction * speed * Time.deltaTime;
         float yMove = -descentSpeed * Time.deltaTime;
         transform.Translate(new Vector3(xMove, yMove, 0));
@@ -77,7 +78,6 @@ public class Enemy : MonoBehaviour
 
         if (transform.position.y < -5.5f) { Destroy(gameObject); }
 
-        // 2. 射撃処理
         if (IsOnScreen())
         {
             timer += Time.deltaTime;
@@ -119,9 +119,7 @@ public class Enemy : MonoBehaviour
         float randomSize = Random.Range(minScale, maxScale);
         transform.localScale = new Vector3(randomSize, randomSize, 1);
 
-        // 弾速は全敵で同じ固定値
         currentBulletSpeed = bulletSpeed;
-        // 弾サイズは敵自身のサイズに比例（randomSize × 比率）
         currentBulletScale = randomSize * bulletScaleRatio;
         currentShotInterval = Random.Range(minShotInterval, maxShotInterval);
         
@@ -148,6 +146,13 @@ public class Enemy : MonoBehaviour
         currentHealth -= damage;
 
         if (currentHealth > 0) return;
+
+        // ★追加：撃破された瞬間にアイテムを生成する（確率判定）
+        if (itemPrefab != null && Random.value < dropChance)
+        {
+            // アイテムをその場に生成
+            Instantiate(itemPrefab, transform.position, Quaternion.identity);
+        }
 
         if (explosionPrefab != null)
         {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections; // ★コルーチンを使うために追加
 
 public class EarthController : MonoBehaviour
 {
@@ -19,10 +20,16 @@ public class EarthController : MonoBehaviour
     private float directionTimer;
     private float shotTimer;
 
+    // ★追加：スタン状態の管理
+    private bool isStunned = false;
+    private SpriteRenderer spriteRenderer;
+
     private void Awake()
     {
         SetupAppearance();
         SetupCollision();
+        // SpriteRendererを取得しておく
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Start()
@@ -34,6 +41,9 @@ public class EarthController : MonoBehaviour
 
     private void Update()
     {
+        // ★追加：スタン中は移動も射撃もさせない
+        if (isStunned) return;
+
         Move();
         ShootAutomatically();
     }
@@ -74,8 +84,41 @@ public class EarthController : MonoBehaviour
         moveDirection = Random.value < 0.5f ? -1f : 1f;
     }
 
+    // ★追加：外部から呼ばれるスタン開始命令
+    public void GetStunned(float duration)
+    {
+        if (!isStunned && gameObject.activeInHierarchy)
+        {
+            StartCoroutine(StunRoutine(duration));
+        }
+    }
+
+    // ★追加：スタン中の演出処理
+    private IEnumerator StunRoutine(float duration)
+    {
+        isStunned = true;
+        Color originalColor = spriteRenderer.color;
+        
+        // 痺れているっぽく「青暗い色」にする
+        spriteRenderer.color = new Color(0.5f, 0.5f, 1f); 
+
+        yield return new WaitForSeconds(duration);
+
+        // 元の色に戻して解除
+        spriteRenderer.color = originalColor;
+        isStunned = false;
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // ★追加：スタン弾（StunBulletタグ）に当たった時の処理
+        if (collision.gameObject.CompareTag("StunBullet"))
+        {
+            Destroy(collision.gameObject);
+            GetStunned(2.0f); // 2秒間停止（時間はここで調整可能）
+            return;
+        }
+
         if (!collision.CompareTag("EnemyBullet") && !collision.CompareTag("Enemy")) return;
 
         Destroy(collision.gameObject);
@@ -84,15 +127,15 @@ public class EarthController : MonoBehaviour
 
     private void SetupAppearance()
     {
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null)
         {
-            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+            sr = gameObject.AddComponent<SpriteRenderer>();
         }
 
-        spriteRenderer.sprite = earthSprite != null ? earthSprite : CreateCircleSprite();
-        spriteRenderer.color = Color.white;
-        spriteRenderer.sortingOrder = 5;
+        sr.sprite = earthSprite != null ? earthSprite : CreateCircleSprite();
+        sr.color = Color.white;
+        sr.sortingOrder = 5;
     }
 
     private void SetupCollision()
