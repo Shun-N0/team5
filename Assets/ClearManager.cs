@@ -2,35 +2,34 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-// クリア画面（Clear Game シーン）の管理スクリプト
 public class ClearManager : MonoBehaviour
 {
+    // ★ここを[SerializeField]のまま残しておけば、Unity上でエラーは出ません
     [Header("スコア表示")]
-    [SerializeField] private TextMeshProUGUI scoreText;    // 今回のスコア
+    [SerializeField] private TextMeshProUGUI scoreText;
 
     [Header("ランキング表示")]
-    [SerializeField] private TextMeshProUGUI rankingText;  // 上位スコア一覧
+    [SerializeField] private TextMeshProUGUI rankingText;
 
     void Start()
     {
-        // 今回のスコアを表示
+        // ★修正：スコアを表示する処理をコメントアウト（無効化）します
+        /* 
         int score = PlayerPrefs.GetInt("ClearScore", 0);
-        if (scoreText != null)
-            scoreText.text = "Score: " + score;
+        if (scoreText != null) scoreText.text = "Score: " + score;
+        */
 
-        // ランキングを表示
         DisplayRanking();
     }
 
-    // PlayerPrefs に保存されたランキングを読み込んで表示する
-    // 今回のスコアと一致する最初のエントリを金色でハイライトする
     private void DisplayRanking()
     {
+        // （ここは今のままでOKです。ランキングには自分のスコアが表示されます）
         if (rankingText == null) return;
 
         int currentScore = PlayerPrefs.GetInt("ClearScore", 0);
         int count = PlayerPrefs.GetInt("RankingCount", 0);
-        bool highlighted = false; // 今回スコアのハイライトは最初の1件のみ
+        bool highlighted = false; 
 
         string text = "<b>== RANKING ==</b>\n";
         for (int i = 0; i < count; i++)
@@ -38,7 +37,6 @@ public class ClearManager : MonoBehaviour
             int s = PlayerPrefs.GetInt("Ranking_" + i, 0);
             string line = (i + 1) + ".  " + s;
 
-            // 今回のスコアと一致する最初のエントリを金色でハイライト
             if (!highlighted && s == currentScore)
             {
                 text += "<color=#FFD700><b>" + line + " << YOU</b></color>\n";
@@ -49,18 +47,19 @@ public class ClearManager : MonoBehaviour
                 text += line + "\n";
             }
         }
-
         rankingText.text = text;
     }
 
     public void RetryGame()
     {
-        RetrySceneStorage.LoadRetryScene();
+        Time.timeScale = 1f;
+        string sceneToLoad = PlayerPrefs.GetString("SavedScene", "SampleScene01");
+        SceneManager.LoadScene(sceneToLoad);
     }
 
-    // タイトルボタン用：タイトル画面（Title Scene）へ
     public void GoToTitle()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene("Title Scene");
     }
 }
