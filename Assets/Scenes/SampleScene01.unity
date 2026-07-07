@@ -1418,8 +1418,9 @@ MonoBehaviour:
   - {fileID: 810262531}
   - {fileID: 1082654652}
   goalLine: {fileID: 859378041}
-  bossPrefab: {fileID: 0}
+  bossPrefab: {fileID: 6300000000000000001, guid: 4a387429b1bd448f9e29faac910ebb5d, type: 3}
   clearThreshold: 1000
+  goalLineAppearDelay: 30
 --- !u!4 &1112583086
 Transform:
   m_ObjectHideFlags: 0
