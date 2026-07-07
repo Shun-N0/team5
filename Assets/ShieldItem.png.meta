@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e53483b36ccbf494388a83babae73e42
+guid: c38ffcc0659e444bdab20087dfab8bb7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2303093974314189299
-    second: Evol2_0
+      213: 7240441418080614533
+    second: ShieldItem_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +51,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 60
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Evol2_0
+      name: ShieldItem_0
       rect:
         serializedVersion: 2
-        x: 38
-        y: 24
-        width: 422
-        height: 449
+        x: 24
+        y: 7
+        width: 466
+        height: 458
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d0ef8a09b34c900e0800000000000000
-      internalID: -2303093974314189299
+      spriteID: 58878b5bb173b7460800000000000000
+      internalID: 7240441418080614533
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Evol2_0: -2303093974314189299
+      ShieldItem_0: 7240441418080614533
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

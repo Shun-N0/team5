@@ -126,7 +126,7 @@ MonoBehaviour:
   killVolume: 0.1
   explosionPrefab: {fileID: 8408093115305735814, guid: a9d1d247b7e02459389c0f86d5394991, type: 3}
   itemPrefab: {fileID: 5339975835776305336, guid: 764122787ec6945419c5e1f8d140111d, type: 3}
-  dropChance: 0.5
+  dropChance: 1
 --- !u!60 &-7769444758577415869
 PolygonCollider2D:
   m_ObjectHideFlags: 0
