@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -26,6 +27,7 @@ public class StageManager : MonoBehaviour
     public GameObject goalLine;      // ステージ1用：GoalLineオブジェクトを入れる
     public GameObject bossPrefab;    // ステージ2用：ボスのプレハブを入れる
     public int clearThreshold = 2000; // クリア（ボス出現）に必要なスコア
+    public float goalLineAppearDelay = 0f; // ゴールラインを出すまでの待ち時間
     private bool isConditionMet = false; 
 
     private bool cleared;
@@ -73,8 +75,14 @@ public class StageManager : MonoBehaviour
         // ステージ1：ゴールラインを出現させる
         if (goalLine != null)
         {
-            goalLine.SetActive(true);
-            Debug.Log("ゴールライン出現！");
+            if (goalLineAppearDelay > 0f)
+            {
+                StartCoroutine(ShowGoalLineAfterDelay());
+            }
+            else
+            {
+                ShowGoalLine();
+            }
         }
 
         // ステージ2：ボスを出現させる
@@ -84,6 +92,20 @@ public class StageManager : MonoBehaviour
             Instantiate(bossPrefab, new Vector3(0, 6, 0), Quaternion.identity);
             Debug.Log("ボス出現！");
         }
+    }
+
+    IEnumerator ShowGoalLineAfterDelay()
+    {
+        yield return new WaitForSeconds(goalLineAppearDelay);
+        ShowGoalLine();
+    }
+
+    void ShowGoalLine()
+    {
+        if (goalLine == null || goalLine.activeSelf) return;
+
+        goalLine.SetActive(true);
+        Debug.Log("ゴールライン出現！");
     }
 
     // --- 以下、ランキングやHP更新の既存コードはそのまま ---
