@@ -43,4 +43,11 @@ public class TitleManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene("SampleScene02");
     }
+
+    // 4. Stage 3が押されたとき（電撃嵐ステージ）
+    public void LoadStage3()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("SampleScene");
+    }
 }
