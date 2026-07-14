@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
 
-public class Boss : MonoBehaviour
+public class Boss2 : MonoBehaviour
 {
     [Header("基本設定")]
     public int hp = 50;

@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     private float timer = 0f;
 
     [Header("残機設定")]
-    public int lives = 5; // ステージ2に合わせて5に設定（任意で調整可）
+    public int lives = 5; 
     public GameObject[] lifeIcons; 
     private Vector3 startPosition;
 
@@ -46,16 +46,23 @@ public class PlayerController : MonoBehaviour
     public float gameOverDelay = 1.5f; 
 
     [Header("進化設定")]
-    public Sprite evolvedSprite;    // 進化後の戦闘機画像
-    private bool isEvolved = false; // 進化しているか
+    public int evolveLevel = 1;      // 現在のレベル (1〜3)
+    public Sprite level2Sprite;      // LEVEL 2 の画像
+    public Sprite level3Sprite;      // LEVEL 3 の画像
+    
+    [Header("LEVEL 2 弾の設定 (2連射)")]
+    public float level2Angle = 0f;      // 弾の広がり角度
+    public float level2Offset = 0.2f;   // 左右の弾の間隔
+
+    [Header("LEVEL 3 弾の設定 (3連射)")]
+    public float level3Angle = 20f;     // 左右の弾の角度
+    public float level3Offset = 0.3f;   // 左右の弾の間隔
 
     [Header("バリア設定")]
     public GameObject shieldObject; // バリアの見た目（子オブジェクト）
-    // バリアで防げるタグのリスト
     public List<string> protectTags = new List<string> { "Enemy", "EnemyBullet", "StunBullet", "EarthBullet" }; 
     private bool hasShield = false;
 
-    // スタン（停止）状態の管理
     private bool isStunned = false;
 
     void Start()
@@ -65,29 +72,24 @@ public class PlayerController : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         mainCamera = Camera.main;
 
-        // 始まった時はバリアをオフにしておく
         if (shieldObject != null) shieldObject.SetActive(false);
-        
         UpdateLifeUI(); 
     }
 
     void Update()
     {
-        // 死亡演出中、またはスタン中は操作を無効化
         if (!spriteRenderer.enabled && lives <= 0) return;
         if (isStunned) return;
 
         MoveToMousePosition();
 
         timer += Time.deltaTime;
-        // マウス左クリック（指タッチ）で連射
         if (Input.GetMouseButton(0) && timer >= shotInterval)
         {
             Shoot();
             timer = 0f;
         }
 
-        // 無敵時間の点滅処理
         if (isInvincible)
         {
             invincibleTimer -= Time.deltaTime;
@@ -120,44 +122,61 @@ public class PlayerController : MonoBehaviour
 
     void Shoot() 
     { 
-        if (bulletPrefab != null) 
-        {
-            if (isEvolved)
-            {
-                // 進化時：左右から2連射
-                GameObject b1 = Instantiate(bulletPrefab, transform.position + new Vector3(0.25f, 0.1f, 0), Quaternion.identity);
-                GameObject b2 = Instantiate(bulletPrefab, transform.position + new Vector3(-0.25f, 0.1f, 0), Quaternion.identity);
-                b1.GetComponent<Bullet>().attackPower = attackPower;
-                b2.GetComponent<Bullet>().attackPower = attackPower;
-            }
-            else
-            {
-                // 通常時
-                GameObject bulletObject = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-                bulletObject.GetComponent<Bullet>().attackPower = attackPower;
-            }
+        if (bulletPrefab == null) return;
 
-            if (shotSound != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(shotSound, shotVolume);
-            }
+        if (evolveLevel == 1)
+        {
+            // LEVEL 1: 中央から1発
+            CreateBullet(transform.position, 0f);
         }
+        else if (evolveLevel == 2)
+        {
+            // LEVEL 2: 2連射（専用の角度と幅を使用）
+            CreateBullet(transform.position + new Vector3(level2Offset, 0.1f, 0), -level2Angle);
+            CreateBullet(transform.position + new Vector3(-level2Offset, 0.1f, 0), level2Angle);
+        }
+        else if (evolveLevel >= 3)
+        {
+            // LEVEL 3: 3連射（専用の角度と幅を使用）
+            CreateBullet(transform.position, 0f); // 中央
+            CreateBullet(transform.position + new Vector3(level3Offset, 0.1f, 0), -level3Angle); // 右斜め
+            CreateBullet(transform.position + new Vector3(-level3Offset, 0.1f, 0), level3Angle);  // 左斜め
+        }
+
+        if (shotSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(shotSound, shotVolume);
+        }
+    }
+
+    void CreateBullet(Vector3 pos, float angle)
+    {
+        GameObject b = Instantiate(bulletPrefab, pos, Quaternion.Euler(0, 0, angle));
+        Bullet bulletScript = b.GetComponent<Bullet>();
+        if (bulletScript != null) bulletScript.attackPower = attackPower;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // --- 1. アイテム取得判定 (最優先) ---
-
-        // 進化アイテム
+        // --- 1. アイテム取得判定 ---
         if (collision.gameObject.CompareTag("Item"))
         {
-            isEvolved = true;
-            if (evolvedSprite != null) spriteRenderer.sprite = evolvedSprite;
+            evolveLevel++;
+            if (evolveLevel > 3) evolveLevel = 3;
+
+            if (evolveLevel == 2 && level2Sprite != null) spriteRenderer.sprite = level2Sprite;
+            if (evolveLevel == 3 && level3Sprite != null) spriteRenderer.sprite = level3Sprite;
+
+            if (GetComponent<PolygonCollider2D>() != null)
+            {
+                Destroy(GetComponent<PolygonCollider2D>());
+                gameObject.AddComponent<PolygonCollider2D>().isTrigger = true;
+            }
+
             Destroy(collision.gameObject);
             return;
         }
 
-        // バリアアイテム
         if (collision.gameObject.CompareTag("ShieldItem"))
         {
             ActivateShield();
@@ -165,24 +184,33 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // --- 2. バリアでの防御判定 ---
+        // --- 2. バリア防御判定（ダメージより先に判定） ---
         if (hasShield)
         {
-            // 当たった相手のタグが「防げるリスト」に入っているか、またはEarthBulletスクリプトを持っているか
             if (protectTags.Contains(collision.gameObject.tag) || collision.GetComponent<EarthBullet>() != null)
             {
-                hasShield = false;
-                if (shieldObject != null) shieldObject.SetActive(false);
+                // ★修正ポイント：相手がボスかどうかをチェックする
+                // ボスのスクリプト名が「Boss2」の場合
+                if (collision.GetComponent<Boss2>() != null)
+                {
+                    // ボスに当たった場合は、バリアだけ消して、ボス（相手）は消さない
+                    hasShield = false;
+                    if (shieldObject != null) shieldObject.SetActive(false);
+                    Debug.Log("ボスに接触！バリアで身を守りました（ボスは消えません）");
+                }
+                else
+                {
+                    // ザコ敵や弾の場合は、今まで通り自分も相手も消す
+                    hasShield = false;
+                    if (shieldObject != null) shieldObject.SetActive(false);
+                    Destroy(collision.gameObject); 
+                    Debug.Log("バリアで防御成功！");
+                }
                 
-                Destroy(collision.gameObject); // 敵や弾を消す
-                Debug.Log("バリアで防ぎました！");
-                return; // ここで終了。ダメージは受けない
+                return; // 本体へのダメージは受けない
             }
         }
-
-        // --- 3. ここから下は「バリアがない時」の通常ダメージ判定 ---
-
-        // 地球の弾（即死/ゲームオーバー）
+        // --- 3. ダメージ判定 ---
         if (collision.GetComponent<EarthBullet>() != null)
         {
             Destroy(collision.gameObject);
@@ -190,7 +218,6 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // スタン弾
         if (collision.gameObject.CompareTag("StunBullet"))
         {
             if (isInvincible) return;
@@ -199,15 +226,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // 敵本体、または敵の弾
         if (collision.gameObject.CompareTag("EnemyBullet") || collision.gameObject.CompareTag("Enemy"))
         {
             if (isInvincible) return;
-
-            if (collision.gameObject.CompareTag("EnemyBullet"))
-            {
-                Destroy(collision.gameObject);
-            }
+            if (collision.gameObject.CompareTag("EnemyBullet")) Destroy(collision.gameObject);
             PlayerDamaged();
         }
     }
@@ -216,7 +238,6 @@ public class PlayerController : MonoBehaviour
     {
         hasShield = true;
         if (shieldObject != null) shieldObject.SetActive(true);
-        Debug.Log("バリア展開！");
     }
 
     public void GetStunned(float duration)
@@ -238,12 +259,9 @@ public class PlayerController : MonoBehaviour
     {
         lives--;
         UpdateLifeUI(); 
-
         if (lives > 0)
         {
-            if (damageSound != null && audioSource != null)
-                audioSource.PlayOneShot(damageSound, damageVolume);
-
+            if (damageSound != null && audioSource != null) audioSource.PlayOneShot(damageSound, damageVolume);
             isInvincible = true;
             invincibleTimer = invincibleDuration;
             blinkTimer = blinkInterval;
@@ -256,12 +274,9 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator GameOverRoutine()
     {
-        if (explosionSound != null)
-            AudioSource.PlayClipAtPoint(explosionSound, Camera.main.transform.position, explosionVolume);
-
+        if (explosionSound != null) AudioSource.PlayClipAtPoint(explosionSound, Camera.main.transform.position, explosionVolume);
         spriteRenderer.enabled = false;
         isInvincible = true; 
-
         yield return new WaitForSeconds(gameOverDelay);
         SceneManager.LoadScene("GameOverScene");
     }
@@ -271,11 +286,7 @@ public class PlayerController : MonoBehaviour
         if (lifeIcons == null) return;
         for (int i = 0; i < lifeIcons.Length; i++)
         {
-            if (lifeIcons[i] != null)
-            {
-                if (i < lives) lifeIcons[i].SetActive(true);
-                else lifeIcons[i].SetActive(false);
-            }
+            if (lifeIcons[i] != null) lifeIcons[i].SetActive(i < lives);
         }
     }
 }
