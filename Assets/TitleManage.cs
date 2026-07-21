@@ -48,6 +48,6 @@ public class TitleManager : MonoBehaviour
     public void LoadStage3()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("SampleScene03");
     }
 }
