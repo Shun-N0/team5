@@ -3,12 +3,21 @@ using UnityEngine;
 public class StunBullet : MonoBehaviour
 {
     public float speed = 5f;
-    public float stunDuration = 2.0f; 
+    public float stunDuration = 2.0f;
+    private Vector2 moveDirection = Vector2.down; // 進行方向（デフォルトは真下＝従来通り）
+
+    // ★追加：Enemy.cs から SendMessage で呼ばれる：進行方向を上書きする
+    // （3方向スタン弾などで使用。呼ばれなければ真下のまま。弾速は既存挙動維持のため上書きしない）
+    public void SetDirection(Vector2 newDirection)
+    {
+        moveDirection = newDirection.normalized;
+    }
 
     void Update()
     {
-        transform.Translate(Vector3.down * speed * Time.deltaTime);
-        if (transform.position.y < -6f) Destroy(gameObject);
+        transform.Translate(moveDirection * speed * Time.deltaTime);
+        if (transform.position.y < -6f || transform.position.y > 6f
+            || Mathf.Abs(transform.position.x) > 12f) Destroy(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

@@ -14,7 +14,14 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("スタン敵設定")]
     public GameObject stunEnemyPrefab;
-    [Range(0f, 1f)] public float stunEnemySpawnChance = 0.15f; 
+    [Range(0f, 1f)] public float stunEnemySpawnChance = 0.15f;
+    public int stunEnemyMaxCount = 0;             // このステージで出す最大数（0 = 無制限）
+
+    [Header("バリアアイテムを落とす敵設定")]
+    public GameObject shieldEnemyPrefab;          // バリア(シールド)アイテムを確定で落とす敵
+    public float shieldEnemySpawnInterval = 15f;  // 出現する間隔（秒）
+    public float shieldEnemyInitialDelay = 3f;    // 最初に出現するまでの待ち時間（秒）
+    public int shieldEnemyMaxCount = 0;           // このステージで出す最大数（0 = 無制限）
 
     [Header("軍艦編隊設定")]
     public GameObject warshipFormationPrefab;
@@ -40,6 +47,11 @@ public class EnemySpawner : MonoBehaviour
     private float difficultyTimer = 0f;  
     private float blueWarshipTimer;
     private float redWarshipTimer;
+    private float shieldEnemyTimer;
+
+    // ★追加：アイテム敵をこれまでに何体出したかのカウンタ（最大数制限に使用）
+    private int shieldEnemySpawnedCount = 0;
+    private int stunEnemySpawnedCount = 0;
 
     // ★追加：ボスの間、生成を止めるためのフラグ
     private bool isSpawningStopped = false;
@@ -55,6 +67,7 @@ public class EnemySpawner : MonoBehaviour
         currentSpawnInterval = initialSpawnInterval;
         blueWarshipTimer = blueWarshipInitialDelay;
         redWarshipTimer = redWarshipInitialDelay;
+        shieldEnemyTimer = shieldEnemyInitialDelay;
     }
 
     void Update()
@@ -88,6 +101,26 @@ public class EnemySpawner : MonoBehaviour
         }
 
         UpdateWarshipSpawns();
+        UpdateShieldEnemySpawn();
+    }
+
+    // ★追加：バリアアイテムを落とす敵を一定間隔で出現させる
+    private void UpdateShieldEnemySpawn()
+    {
+        if (shieldEnemyPrefab == null) return;
+
+        // ★追加：最大数に達していたら、もう出さない（0のときは無制限）
+        if (shieldEnemyMaxCount > 0 && shieldEnemySpawnedCount >= shieldEnemyMaxCount) return;
+
+        shieldEnemyTimer -= Time.deltaTime;
+        if (shieldEnemyTimer <= 0f)
+        {
+            // 敵自身のStart()で画面上部のランダムな位置に配置されるため、原点で生成してよい
+            Instantiate(shieldEnemyPrefab, Vector3.zero, Quaternion.identity);
+            shieldEnemyTimer = shieldEnemySpawnInterval;
+            shieldEnemySpawnedCount++;
+            Debug.Log("バリアアイテムを持った敵が出現！");
+        }
     }
 
     // ★追加：外部（StageManagerなど）から生成を止めるための命令
@@ -105,9 +138,12 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        if (stunEnemyPrefab != null && Random.value < stunEnemySpawnChance)
+        // ★追加：最大数に達していないときだけスタン敵を出す（stunEnemyMaxCount が0なら無制限）
+        if (stunEnemyPrefab != null && Random.value < stunEnemySpawnChance
+            && (stunEnemyMaxCount <= 0 || stunEnemySpawnedCount < stunEnemyMaxCount))
         {
             Instantiate(stunEnemyPrefab, Vector3.zero, Quaternion.identity);
+            stunEnemySpawnedCount++;
             return;
         }
 

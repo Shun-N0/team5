@@ -14,6 +14,22 @@ public class Enemy : MonoBehaviour
     public float shotInterval = 3f;
     private float timer;
 
+    // ★追加：攻撃パターンの種類
+    // デフォルトは Straight（まっすぐ1発）なので、既存の敵の挙動は一切変わりません
+    public enum AttackPattern
+    {
+        Straight, // まっすぐ1発（従来通り）
+        ThreeWay, // 左右に広がる3方向弾
+        Aimed,    // プレイヤーを狙い撃ち
+        Burst     // 短い間隔での連射
+    }
+
+    [Header("攻撃パターン設定")]
+    public AttackPattern attackPattern = AttackPattern.Straight; // 発射パターン
+    public float spreadAngle = 20f;   // ThreeWay時、真下から左右へ広げる角度（度）
+    public int burstCount = 3;        // Burst時に連射する弾数
+    public float burstDelay = 0.12f;  // Burst時の弾と弾の間隔（秒）
+
     [Header("弾の設定")]
     public float minShotInterval = 1.0f;
     public float maxShotInterval = 3.0f;
@@ -98,12 +114,69 @@ public class Enemy : MonoBehaviour
 
     void Shoot()
     {
-        if (enemyBulletPrefab != null)
+        if (enemyBulletPrefab == null) return;
+
+        // 攻撃パターンごとに発射方法を切り替える
+        switch (attackPattern)
         {
-            GameObject bullet = Instantiate(enemyBulletPrefab, transform.position, Quaternion.identity);
-            bullet.transform.localScale = new Vector3(currentBulletScale, currentBulletScale, 1);
-            bullet.SendMessage("SetSpeed", currentBulletSpeed, SendMessageOptions.DontRequireReceiver);
+            case AttackPattern.ThreeWay:
+                // 真下を中心に、左右へ spreadAngle 度ずつ広げた3発を撃つ
+                FireBullet(RotateDir(Vector2.down, -spreadAngle));
+                FireBullet(Vector2.down);
+                FireBullet(RotateDir(Vector2.down, spreadAngle));
+                break;
+
+            case AttackPattern.Aimed:
+                // プレイヤーの位置を狙って1発撃つ
+                FireBullet(GetAimDirection());
+                break;
+
+            case AttackPattern.Burst:
+                // 短い間隔で連射する（時間差発射のためコルーチンを使う）
+                StartCoroutine(BurstFire());
+                break;
+
+            default: // Straight（従来通り：まっすぐ1発）
+                FireBullet(Vector2.down);
+                break;
         }
+    }
+
+    // 指定した方向へ弾を1発撃つ共通処理
+    void FireBullet(Vector2 direction)
+    {
+        GameObject bullet = Instantiate(enemyBulletPrefab, transform.position, Quaternion.identity);
+        bullet.transform.localScale = new Vector3(currentBulletScale, currentBulletScale, 1);
+        bullet.SendMessage("SetSpeed", currentBulletSpeed, SendMessageOptions.DontRequireReceiver);
+        // 弾が方向指定に対応していれば向きを設定する（未対応の弾は無視される）
+        bullet.SendMessage("SetDirection", direction, SendMessageOptions.DontRequireReceiver);
+    }
+
+    // Burst：burstCount 発を burstDelay 間隔で真下へ連射する
+    System.Collections.IEnumerator BurstFire()
+    {
+        for (int i = 0; i < burstCount; i++)
+        {
+            FireBullet(Vector2.down);
+            yield return new WaitForSeconds(burstDelay);
+        }
+    }
+
+    // ベクトルを angle 度だけ回転させる（ThreeWayの拡散に使用）
+    Vector2 RotateDir(Vector2 dir, float angle)
+    {
+        float rad = angle * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(rad);
+        float sin = Mathf.Sin(rad);
+        return new Vector2(dir.x * cos - dir.y * sin, dir.x * sin + dir.y * cos);
+    }
+
+    // プレイヤーの方向を求める（見つからなければ真下）
+    Vector2 GetAimDirection()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) return Vector2.down;
+        return ((Vector2)(player.transform.position - transform.position)).normalized;
     }
 
     void InitializeEnemy()
