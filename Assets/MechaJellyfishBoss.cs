@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class MechaJellyfishBoss : MonoBehaviour
 {
     [Header("基本設定")]
-    [SerializeField] private int maxHealth = 150;
+    [SerializeField] private int maxHealth = 45;
     [SerializeField] private int scoreValue = 1000;
     [SerializeField] private float stopY = 3.2f;
     [SerializeField] private float moveSpeed = 1.4f;
@@ -17,21 +17,37 @@ public class MechaJellyfishBoss : MonoBehaviour
     [SerializeField] private float bulletScale = 0.6f;
     [SerializeField] private int burstCount = 4;
     [SerializeField] private float burstDelay = 0.16f;
-    [SerializeField] private float diagonalAngle = 28f;
+    [SerializeField] private float diagonalAngle = 14f;
 
     [Header("視界妨害")]
     [SerializeField] private float blackoutDuration = 0.3f;
+
+    [Header("体力ゲージ")]
+    [SerializeField] private Vector2 healthGaugeSize = new Vector2(24f, 260f);
+    [SerializeField] private Vector2 healthGaugeOffset = new Vector2(24f, 0f);
+    [SerializeField] private Color healthGaugeBackgroundColor = new Color(0f, 0f, 0f, 0.55f);
+    [SerializeField] private Color healthGaugeFillColor = new Color(1f, 0.12f, 0.18f, 0.9f);
 
     private int currentHealth;
     private bool isReady;
     private Coroutine attackCoroutine;
     private Coroutine blackoutCoroutine;
     private GameObject blackoutObject;
+    private GameObject healthGaugeObject;
+    private RectTransform healthGaugeFillRect;
+    private SampleScene01BossHitFlash hitFlash;
+
+    void Awake()
+    {
+        hitFlash = GetComponent<SampleScene01BossHitFlash>();
+    }
 
     void Start()
     {
         currentHealth = maxHealth;
         CreateBlackoutOverlay();
+        CreateHealthGauge();
+        UpdateHealthGauge();
     }
 
     void Update()
@@ -44,6 +60,14 @@ public class MechaJellyfishBoss : MonoBehaviour
         {
             isReady = true;
             attackCoroutine = StartCoroutine(AttackRoutine());
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (healthGaugeObject != null)
+        {
+            Destroy(healthGaugeObject);
         }
     }
 
@@ -132,6 +156,57 @@ public class MechaJellyfishBoss : MonoBehaviour
         blackoutCoroutine = null;
     }
 
+    void CreateHealthGauge()
+    {
+        healthGaugeObject = new GameObject("Boss Health Gauge");
+
+        Canvas canvas = healthGaugeObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 1000;
+
+        CanvasScaler scaler = healthGaugeObject.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1080f, 1920f);
+        scaler.matchWidthOrHeight = 1f;
+
+        healthGaugeObject.AddComponent<GraphicRaycaster>();
+
+        GameObject backgroundObject = new GameObject("Background");
+        backgroundObject.transform.SetParent(healthGaugeObject.transform, false);
+
+        Image backgroundImage = backgroundObject.AddComponent<Image>();
+        backgroundImage.color = healthGaugeBackgroundColor;
+
+        RectTransform backgroundRect = backgroundImage.rectTransform;
+        backgroundRect.anchorMin = new Vector2(0f, 0.5f);
+        backgroundRect.anchorMax = new Vector2(0f, 0.5f);
+        backgroundRect.pivot = new Vector2(0f, 0.5f);
+        backgroundRect.anchoredPosition = healthGaugeOffset;
+        backgroundRect.sizeDelta = healthGaugeSize;
+
+        GameObject fillObject = new GameObject("Fill");
+        fillObject.transform.SetParent(backgroundObject.transform, false);
+
+        Image fillImage = fillObject.AddComponent<Image>();
+        fillImage.color = healthGaugeFillColor;
+
+        healthGaugeFillRect = fillImage.rectTransform;
+        healthGaugeFillRect.anchorMin = new Vector2(0f, 0f);
+        healthGaugeFillRect.anchorMax = new Vector2(1f, 0f);
+        healthGaugeFillRect.pivot = new Vector2(0.5f, 0f);
+        healthGaugeFillRect.anchoredPosition = new Vector2(0f, 3f);
+        healthGaugeFillRect.sizeDelta = new Vector2(-6f, healthGaugeSize.y - 6f);
+    }
+
+    void UpdateHealthGauge()
+    {
+        if (healthGaugeFillRect == null) return;
+
+        float healthRate = maxHealth <= 0 ? 0f : (float)currentHealth / maxHealth;
+        float fillHeight = (healthGaugeSize.y - 6f) * Mathf.Clamp01(healthRate);
+        healthGaugeFillRect.sizeDelta = new Vector2(-6f, fillHeight);
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!collision.CompareTag("Bullet")) return;
@@ -142,7 +217,10 @@ public class MechaJellyfishBoss : MonoBehaviour
 
     void TakeDamage(int damage)
     {
-        currentHealth -= damage;
+        currentHealth = Mathf.Max(0, currentHealth - damage);
+        UpdateHealthGauge();
+        hitFlash?.Play();
+
         if (currentHealth > 0) return;
 
         if (attackCoroutine != null)
@@ -153,6 +231,11 @@ public class MechaJellyfishBoss : MonoBehaviour
         if (blackoutObject != null)
         {
             Destroy(blackoutObject);
+        }
+
+        if (healthGaugeObject != null)
+        {
+            Destroy(healthGaugeObject);
         }
 
         StageManager.Instance?.AddScore(scoreValue);

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6300000000000000002}
   - component: {fileID: 6300000000000000003}
   - component: {fileID: 6300000000000000004}
+  - component: {fileID: 6300000000000000006}
   - component: {fileID: 6300000000000000005}
   m_Layer: 0
   m_Name: Mecha Jellyfish Boss
@@ -105,7 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0221f5bcdb8c4441810f44fe30d0f293, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MechaJellyfishBoss
-  maxHealth: 30
+  maxHealth: 45
   scoreValue: 1000
   stopY: 3.2
   moveSpeed: 1.4
@@ -115,8 +116,22 @@ MonoBehaviour:
   bulletScale: 0.6
   burstCount: 4
   burstDelay: 0.16
-  diagonalAngle: 28
+  diagonalAngle: 14
   blackoutDuration: 0.3
+--- !u!114 &6300000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6300000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70bb6e454a474d48b2d02ccce5dd1e32, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  flashColor: {r: 1, g: 0.15, b: 0.15, a: 1}
+  flashDuration: 0.12
 --- !u!61 &6300000000000000005
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("バリア設定")]
     public GameObject shieldObject; // バリアの見た目（子オブジェクト）
+    [SerializeField] private float shieldWorldSize = 1.2f;
     public List<string> protectTags = new List<string> { "Enemy", "EnemyBullet", "StunBullet", "EarthBullet" }; 
     private bool hasShield = false;
 
@@ -72,6 +73,7 @@ public class PlayerController : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         mainCamera = Camera.main;
 
+        EnsureShieldObject();
         if (shieldObject != null) shieldObject.SetActive(false);
         UpdateLifeUI(); 
     }
@@ -179,6 +181,13 @@ public class PlayerController : MonoBehaviour
 
         if (collision.gameObject.CompareTag("ShieldItem"))
         {
+            if (hasShield)
+            {
+                Destroy(collision.gameObject);
+                Debug.Log("既にバリアがあるため、バリアアイテムは効果なし");
+                return;
+            }
+
             ActivateShield();
             Destroy(collision.gameObject);
             return;
@@ -187,22 +196,17 @@ public class PlayerController : MonoBehaviour
         // --- 2. バリア防御判定（ダメージより先に判定） ---
         if (hasShield)
         {
-            if (protectTags.Contains(collision.gameObject.tag) || collision.GetComponent<EarthBullet>() != null)
+            if (IsProtectedByShield(collision))
             {
-                // ★修正ポイント：相手がボスかどうかをチェックする
-                // ボスのスクリプト名が「Boss2」の場合
-                if (collision.GetComponent<Boss2>() != null)
+                if (IsBossCollision(collision))
                 {
                     // ボスに当たった場合は、バリアだけ消して、ボス（相手）は消さない
-                    hasShield = false;
-                    if (shieldObject != null) shieldObject.SetActive(false);
+                    DeactivateShield();
                     Debug.Log("ボスに接触！バリアで身を守りました（ボスは消えません）");
                 }
                 else
                 {
-                    // ザコ敵や弾の場合は、今まで通り自分も相手も消す
-                    hasShield = false;
-                    if (shieldObject != null) shieldObject.SetActive(false);
+                    DeactivateShield();
                     Destroy(collision.gameObject); 
                     Debug.Log("バリアで防御成功！");
                 }
@@ -236,8 +240,102 @@ public class PlayerController : MonoBehaviour
 
     public void ActivateShield()
     {
+        EnsureShieldObject();
         hasShield = true;
         if (shieldObject != null) shieldObject.SetActive(true);
+    }
+
+    private void DeactivateShield()
+    {
+        hasShield = false;
+        if (shieldObject != null) shieldObject.SetActive(false);
+    }
+
+    private bool IsProtectedByShield(Collider2D collision)
+    {
+        return protectTags.Contains(collision.gameObject.tag) || collision.GetComponent<EarthBullet>() != null;
+    }
+
+    private bool IsBossCollision(Collider2D collision)
+    {
+        return collision.GetComponent<Boss2>() != null
+            || collision.GetComponent<Boss3>() != null
+            || collision.GetComponent<MechaJellyfishBoss>() != null;
+    }
+
+    private void EnsureShieldObject()
+    {
+        if (shieldObject == null)
+        {
+            CreateDefaultShieldObject();
+            return;
+        }
+
+        if (shieldObject.GetComponentInChildren<SpriteRenderer>() == null)
+        {
+            SpriteRenderer shieldRenderer = shieldObject.AddComponent<SpriteRenderer>();
+            shieldRenderer.sprite = CreateShieldSprite();
+            shieldRenderer.color = new Color(0.2f, 0.9f, 1f, 0.55f);
+            shieldRenderer.sortingOrder = 100;
+        }
+
+        AdjustShieldScale();
+    }
+
+    private void CreateDefaultShieldObject()
+    {
+        GameObject defaultShield = new GameObject("Shield");
+        defaultShield.transform.SetParent(transform, false);
+
+        SpriteRenderer shieldRenderer = defaultShield.AddComponent<SpriteRenderer>();
+        shieldRenderer.sprite = CreateShieldSprite();
+        shieldRenderer.color = new Color(0.2f, 0.9f, 1f, 0.55f);
+        shieldRenderer.sortingOrder = 100;
+
+        shieldObject = defaultShield;
+        AdjustShieldScale();
+    }
+
+    private void AdjustShieldScale()
+    {
+        if (shieldObject == null) return;
+
+        float parentScale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
+        if (parentScale <= 0f) parentScale = 1f;
+
+        float localSize = shieldWorldSize / parentScale;
+        shieldObject.transform.localPosition = Vector3.zero;
+        shieldObject.transform.localScale = Vector3.one * localSize;
+    }
+
+    private Sprite CreateShieldSprite()
+    {
+        const int textureSize = 96;
+        Texture2D texture = new Texture2D(textureSize, textureSize);
+        Vector2 center = Vector2.one * (textureSize - 1) / 2f;
+        float outerRadius = textureSize * 0.46f;
+        float innerRadius = textureSize * 0.37f;
+
+        for (int y = 0; y < textureSize; y++)
+        {
+            for (int x = 0; x < textureSize; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), center);
+                bool isRing = distance <= outerRadius && distance >= innerRadius;
+                bool isFill = distance < innerRadius;
+
+                if (isRing)
+                    texture.SetPixel(x, y, Color.white);
+                else if (isFill)
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, 0.25f));
+                else
+                    texture.SetPixel(x, y, Color.clear);
+            }
+        }
+
+        texture.Apply();
+        texture.filterMode = FilterMode.Bilinear;
+        return Sprite.Create(texture, new Rect(0, 0, textureSize, textureSize), Vector2.one * 0.5f, textureSize);
     }
 
     public void GetStunned(float duration)
