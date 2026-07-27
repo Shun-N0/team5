@@ -23,6 +23,10 @@ public class EnemySpawner : MonoBehaviour
     public float shieldEnemyInitialDelay = 3f;    // 最初に出現するまでの待ち時間（秒）
     public int shieldEnemyMaxCount = 0;           // このステージで出す最大数（0 = 無制限）
 
+    [Header("撃破時アイテムドロップ設定")]
+    public GameObject defeatDropItemPrefab;        // 敵を倒した時に落とすアイテム
+    [Range(0f, 1f)] public float defeatDropChance = 0f;
+
     [Header("軍艦編隊設定")]
     public GameObject warshipFormationPrefab;
     public float blueWarshipSpawnInterval = 18f;
@@ -116,7 +120,8 @@ public class EnemySpawner : MonoBehaviour
         if (shieldEnemyTimer <= 0f)
         {
             // 敵自身のStart()で画面上部のランダムな位置に配置されるため、原点で生成してよい
-            Instantiate(shieldEnemyPrefab, Vector3.zero, Quaternion.identity);
+            GameObject enemy = Instantiate(shieldEnemyPrefab, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
             shieldEnemyTimer = shieldEnemySpawnInterval;
             shieldEnemySpawnedCount++;
             Debug.Log("バリアアイテムを持った敵が出現！");
@@ -134,7 +139,8 @@ public class EnemySpawner : MonoBehaviour
     {
         if (tankEnemyPrefab != null && Random.value < tankEnemySpawnChance)
         {
-            Instantiate(tankEnemyPrefab, Vector3.zero, Quaternion.identity);
+            GameObject enemy = Instantiate(tankEnemyPrefab, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
             return;
         }
 
@@ -142,7 +148,8 @@ public class EnemySpawner : MonoBehaviour
         if (stunEnemyPrefab != null && Random.value < stunEnemySpawnChance
             && (stunEnemyMaxCount <= 0 || stunEnemySpawnedCount < stunEnemyMaxCount))
         {
-            Instantiate(stunEnemyPrefab, Vector3.zero, Quaternion.identity);
+            GameObject enemy = Instantiate(stunEnemyPrefab, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
             stunEnemySpawnedCount++;
             return;
         }
@@ -151,7 +158,19 @@ public class EnemySpawner : MonoBehaviour
 
         if (prefabToSpawn != null)
         {
-            Instantiate(prefabToSpawn, Vector3.zero, Quaternion.identity);
+            GameObject enemy = Instantiate(prefabToSpawn, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
+        }
+    }
+
+    private void ApplyDefeatDropSetting(GameObject enemyObject)
+    {
+        if (defeatDropItemPrefab == null || defeatDropChance <= 0f) return;
+
+        Enemy enemy = enemyObject.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            enemy.SetItemDrop(defeatDropItemPrefab, defeatDropChance);
         }
     }
 

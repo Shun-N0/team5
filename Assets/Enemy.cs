@@ -68,6 +68,12 @@ public class Enemy : MonoBehaviour
     public GameObject itemPrefab; // 落としたいアイテムのプレハブ
     [Range(0f, 1f)] public float dropChance = 0.2f; // アイテムが落ちる確率 (0.2 = 20%)
 
+    public void SetItemDrop(GameObject newItemPrefab, float newDropChance)
+    {
+        itemPrefab = newItemPrefab;
+        dropChance = newDropChance;
+    }
+
     void Start()
     {
         currentHealth = maxHealth;
