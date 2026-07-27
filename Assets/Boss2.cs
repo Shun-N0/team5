@@ -9,6 +9,7 @@ public class Boss2 : MonoBehaviour
     public float stopY = 3.0f;       
     public float moveSpeed = 1.5f;   
     public float attackInterval = 2.0f; 
+    public int scoreValue = 1000;    // ★追加：ボスを倒した時にもらえるスコア
 
     [Header("弾のプレハブ")]
     public GameObject normalBullet;
@@ -34,19 +35,17 @@ public class Boss2 : MonoBehaviour
     public int lineBulletCount = 10;     
     public float lineRangeX = 2.2f;      
 
-    // ★追加：ヒット演出用の設定
     [Header("被弾エフェクト")]
-    public Color hitColor = Color.white; // 当たった時の色
-    public float flashDuration = 0.05f;  // 光る時間（一瞬にするのがコツ）
+    public Color hitColor = Color.white; 
+    public float flashDuration = 0.05f;  
 
     private bool isReady = false;
     private SpriteRenderer spriteRenderer;
-    private Color originalColor; // 元の色を保存する用
+    private Color originalColor; 
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        // 最初のエネミーの色を覚えておく
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
     }
 
@@ -138,29 +137,32 @@ public class Boss2 : MonoBehaviour
         {
             Destroy(collision.gameObject);
             hp--;
-
-            // ★追加：当たった瞬間に光らせる
             StartCoroutine(FlashRoutine());
-
             if (hp <= 0) Defeat();
         }
     }
 
-    // ★追加：一瞬だけ白く光らせるコルーチン
     IEnumerator FlashRoutine()
     {
         if (spriteRenderer != null)
         {
-            spriteRenderer.color = hitColor;      // 白くする
-            yield return new WaitForSeconds(flashDuration); // 少し待つ
-            spriteRenderer.color = originalColor; // 元の色に戻す
+            spriteRenderer.color = hitColor;      
+            yield return new WaitForSeconds(flashDuration); 
+            spriteRenderer.color = originalColor; 
         }
     }
 
+    // 撃破時の処理
     void Defeat()
     {
         Debug.Log("ボスを倒した！");
-        SceneManager.LoadScene("Clear Game");
+        if (StageManager.Instance != null)
+        {
+            // ★追加：撃破スコアを加算する
+            StageManager.Instance.AddScore(scoreValue);
+            // 撃破を報告（通常ステージならクリア、エンドレスなら続行）
+            StageManager.Instance.OnBossDefeated();
+        }
         Destroy(gameObject);
     }
 }

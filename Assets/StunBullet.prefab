@@ -106,7 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7de379a487612410aba78973b63c896f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
-  speed: 5
+  speed: 8
   stunDuration: 0.5
 --- !u!61 &-5008139365750610405
 BoxCollider2D:

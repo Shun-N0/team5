@@ -111,7 +111,7 @@ MonoBehaviour:
   yMin: -4.5
   yMax: 4.5
   bulletPrefab: {fileID: 5339789313867460059, guid: 903b07093ae4146dba99d22133612d11, type: 3}
-  shotInterval: 0.1
+  shotInterval: 0.2
   attackPower: 1
   lives: 3
   lifeIcons:
@@ -120,6 +120,26 @@ MonoBehaviour:
   - {fileID: 0}
   invincibleDuration: 2
   blinkInterval: 0.1
+  shotSound: {fileID: 0}
+  damageSound: {fileID: 0}
+  explosionSound: {fileID: 0}
+  shotVolume: 0.3
+  damageVolume: 0.8
+  explosionVolume: 1
+  gameOverDelay: 1.5
+  evolveLevel: 1
+  level2Sprite: {fileID: -2303093974314189299, guid: e53483b36ccbf494388a83babae73e42, type: 3}
+  level3Sprite: {fileID: -3779513796163146680, guid: 127e7603d68bf4332ab62da65bfb2058, type: 3}
+  level2Angle: 0
+  level2Offset: 0.2
+  level3Angle: 20
+  level3Offset: 0.3
+  shieldObject: {fileID: 0}
+  protectTags:
+  - Enemy
+  - EnemyBullet
+  - StunBullet
+  - EarthBullet
 --- !u!50 &4905401156112380866
 Rigidbody2D:
   serializedVersion: 5

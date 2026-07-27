@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5180603270067469896
+--- !u!1 &1406345452340815891
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,40 +8,40 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8528730653627597658}
-  - component: {fileID: 5505598690903448684}
-  - component: {fileID: 8103696761556696963}
-  - component: {fileID: -7769444758577415869}
+  - component: {fileID: 1406345452340815892}
+  - component: {fileID: 1406345452340815893}
+  - component: {fileID: 1406345452340815894}
+  - component: {fileID: 1406345452340815895}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Tank Enemy item
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8528730653627597658
+--- !u!4 &1406345452340815892
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5180603270067469896}
+  m_GameObject: {fileID: 1406345452340815891}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 3, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.35, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &5505598690903448684
+--- !u!212 &1406345452340815893
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5180603270067469896}
+  m_GameObject: {fileID: 1406345452340815891}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -60,7 +60,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -876546973899608171, guid: bde135b320597544b9ac325092409f8b, type: 3}
+  - {fileID: 2100000, guid: c2e40fa84d53ccd428f640eac126b1fb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -83,8 +83,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 8596640243658272642, guid: 7b7aa674adcaa42cdaed7981ef48f235, type: 3}
-  m_Color: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 650ecad4bd504aba9462754e311e3555, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -93,51 +93,51 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &8103696761556696963
+--- !u!114 &1406345452340815894
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5180603270067469896}
+  m_GameObject: {fileID: 1406345452340815891}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44633b6dfd0ac4a20a66175bee3f6942, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  speed: 5
   descentSpeed: 0.5
-  minDescentSpeed: 0.5
-  maxDescentSpeed: 1.5
+  minDescentSpeed: 0.8
+  maxDescentSpeed: 1.8
   enemyBulletPrefab: {fileID: 9028439366270882026, guid: b27883967321e4e468e2ad2b9ebd95d6, type: 3}
   shotInterval: 1
   attackPattern: 0
   spreadAngle: 20
   burstCount: 3
   burstDelay: 0.12
-  minShotInterval: 0.7
-  maxShotInterval: 1.1
-  bulletSpeed: 1.5
-  bulletScaleRatio: 1.4
+  minShotInterval: 1
+  maxShotInterval: 2
+  bulletSpeed: 3
+  bulletScaleRatio: 1.3
   spawnYOffset: 1
   minMoveXRange: 1
-  maxMoveXRange: 2.5
-  minScale: 0.1
-  maxScale: 0.3
-  maxHealth: 1
-  scoreValue: 100
+  maxMoveXRange: 2.3
+  minScale: 0.25
+  maxScale: 0.4
+  maxHealth: 5
+  scoreValue: 400
   killSound: {fileID: 8300000, guid: dbabc3d1759b14fd2aa1698cb30c7ded, type: 3}
   killVolume: 0.1
   explosionPrefab: {fileID: 8408093115305735814, guid: a9d1d247b7e02459389c0f86d5394991, type: 3}
-  itemPrefab: {fileID: 0}
-  dropChance: 0.2
---- !u!60 &-7769444758577415869
-PolygonCollider2D:
+  itemPrefab: {fileID: 4938575083112966539, guid: 8f402f84b99a74bc1a550e4e173177a4, type: 3}
+  dropChance: 0.5
+--- !u!61 &1406345452340815895
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5180603270067469896}
+  m_GameObject: {fileID: 1406345452340815891}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -169,51 +169,11 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4.74, y: 3.56}
+    oldSize: {x: 3.4335938, y: 3.4335938}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: 1.67, y: -1.53}
-      - {x: 1.6999999, y: -1.3299999}
-      - {x: 2.37, y: -1.31}
-      - {x: 2.37, y: -0.53999996}
-      - {x: 2.12, y: -0.31}
-      - {x: 1.67, y: -0.32999998}
-      - {x: 1.67, y: 0.12}
-      - {x: 1.65, y: 0.14}
-      - {x: 1.43, y: 0.14}
-      - {x: 1.4499999, y: 0.84}
-      - {x: 0.98999995, y: 1.3199999}
-      - {x: 0.48, y: 1.5799999}
-      - {x: 0.24, y: 1.78}
-      - {x: -0.24, y: 1.78}
-      - {x: -0.48999998, y: 1.5699999}
-      - {x: -0.95, y: 1.3399999}
-      - {x: -1.22, y: 1.0799999}
-      - {x: -1.43, y: 0.88}
-      - {x: -1.6999999, y: 0.13}
-      - {x: -1.67, y: -0.32999998}
-      - {x: -2.1299999, y: -0.31}
-      - {x: -2.37, y: -0.55}
-      - {x: -2.37, y: -1.3199999}
-      - {x: -1.67, y: -1.5799999}
-      - {x: -1.42, y: -1.78}
-      - {x: 1.4599999, y: -1.78}
-    - - {x: -0.17999999, y: 1.37}
-      - {x: -0.19999999, y: 1.39}
-      - {x: -0.19, y: 1.41}
-      - {x: -0.19, y: 1.4399999}
-      - {x: -0.17999999, y: 1.4499999}
-      - {x: -0.17999999, y: 1.5}
-      - {x: -0.19, y: 1.51}
-      - {x: -0.06, y: 1.5}
-      - {x: -0.049999997, y: 1.49}
-      - {x: -0.04, y: 1.43}
-      - {x: -0.049999997, y: 1.42}
-      - {x: -0.049999997, y: 1.35}
-      - {x: -0.17999999, y: 1.35}
-  m_UseDelaunayMesh: 1
+  m_Size: {x: 4.74, y: 3.56}
+  m_EdgeRadius: 0

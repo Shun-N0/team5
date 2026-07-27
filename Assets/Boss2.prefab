@@ -105,10 +105,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 645eea27132174ad29bfe86babc0e649, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Boss
-  hp: 70
+  hp: 100
   stopY: 5
   moveSpeed: 2
-  attackInterval: 2
+  attackInterval: 1.5
+  scoreValue: 3000
   normalBullet: {fileID: 9028439366270882026, guid: b27883967321e4e468e2ad2b9ebd95d6, type: 3}
   stunBullet: {fileID: 9028439366270882026, guid: f6033bb6120b1415a93d87102bae5343, type: 3}
   ringBulletSpeed: 2.5
@@ -116,9 +117,9 @@ MonoBehaviour:
   ringBulletCount: 36
   stunBulletSpeed: 3
   stunBulletScale: 0.5
-  burstBulletSpeed: 6
+  burstBulletSpeed: 3
   burstBulletScale: 0.6
-  burstCount: 5
+  burstCount: 7
   lineBulletSpeed: 3
   lineBulletScale: 0.7
   lineBulletCount: 10
