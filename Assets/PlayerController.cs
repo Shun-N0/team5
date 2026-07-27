@@ -271,7 +271,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (shieldObject.GetComponentInChildren<SpriteRenderer>() == null)
+        if (shieldObject.GetComponentInChildren<SpriteRenderer>(true) == null)
         {
             SpriteRenderer shieldRenderer = shieldObject.AddComponent<SpriteRenderer>();
             shieldRenderer.sprite = CreateShieldSprite();
@@ -303,7 +303,17 @@ public class PlayerController : MonoBehaviour
         float parentScale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
         if (parentScale <= 0f) parentScale = 1f;
 
-        float localSize = shieldWorldSize / parentScale;
+        float spriteSize = 1f;
+        SpriteRenderer shieldRenderer = shieldObject.GetComponentInChildren<SpriteRenderer>(true);
+        if (shieldRenderer != null && shieldRenderer.sprite != null)
+        {
+            Vector2 spriteBoundsSize = shieldRenderer.sprite.bounds.size;
+            spriteSize = Mathf.Max(spriteBoundsSize.x, spriteBoundsSize.y);
+        }
+
+        if (spriteSize <= 0f) spriteSize = 1f;
+
+        float localSize = shieldWorldSize / (parentScale * spriteSize);
         shieldObject.transform.localPosition = Vector3.zero;
         shieldObject.transform.localScale = Vector3.one * localSize;
     }
