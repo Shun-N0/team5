@@ -176,7 +176,7 @@ public class Stage00GateSpawner : MonoBehaviour
         stage00Player.damageVolume = basePlayer.damageVolume;
         stage00Player.explosionVolume = basePlayer.explosionVolume;
         stage00Player.gameOverDelay = basePlayer.gameOverDelay;
-        stage00Player.evolvedSprite = basePlayer.evolvedSprite;
+        stage00Player.evolvedSprite = basePlayer.level2Sprite;
 
         Destroy(basePlayer);
     }
@@ -210,8 +210,14 @@ public class Stage00GateSpawner : MonoBehaviour
             if (unit != null) Destroy(unit.gameObject);
         }
 
-        Boss boss = FindObjectOfType<Boss>();
-        if (boss != null) Destroy(boss.gameObject);
+        Boss2 boss2 = FindObjectOfType<Boss2>();
+        if (boss2 != null) Destroy(boss2.gameObject);
+
+        Boss3 boss3 = FindObjectOfType<Boss3>();
+        if (boss3 != null) Destroy(boss3.gameObject);
+
+        MechaJellyfishBoss mechaJellyfishBoss = FindObjectOfType<MechaJellyfishBoss>();
+        if (mechaJellyfishBoss != null) Destroy(mechaJellyfishBoss.gameObject);
     }
 
     public void SetSpawningEnabled(bool enabled)
