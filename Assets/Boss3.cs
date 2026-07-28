@@ -64,13 +64,22 @@ public class Boss3 : MonoBehaviour
     private Color originalColor;           // 元の体色（被弾フラッシュから戻す用）
     private float swayDirection = 1f;      // 現在の左右移動の向き（1:右 / -1:左）
     private float centerX;                 // 左右移動の中心となるX座標
+    private BossHealthGauge healthGauge;
 
     void Start()
     {
         currentHp = maxHp;
         centerX = transform.position.x;
+        healthGauge = BossHealthGauge.Create("Stage3 Boss Health Gauge");
+        healthGauge.SetHealth(currentHp, maxHp);
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
+    }
+
+    void OnDestroy()
+    {
+        healthGauge?.Destroy();
     }
 
     void Update()
@@ -209,7 +218,8 @@ public class Boss3 : MonoBehaviour
 
     void TakeDamage(int damage)
     {
-        currentHp -= damage;
+        currentHp = Mathf.Max(0, currentHp - damage);
+        healthGauge?.SetHealth(currentHp, maxHp);
 
         // 被弾時に一瞬光らせる
         StartCoroutine(FlashRoutine());
