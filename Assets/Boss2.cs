@@ -44,13 +44,25 @@ public class Boss2 : MonoBehaviour
     public float flashDuration = 0.05f;  
 
     private bool isReady = false;
+    private int maxHp;
+    private BossHealthGauge healthGauge;
     private SpriteRenderer spriteRenderer;
     private Color originalColor; 
 
     void Start()
     {
+        maxHp = Mathf.Max(1, hp);
+        hp = maxHp;
+        healthGauge = BossHealthGauge.Create("Stage2 Boss Health Gauge");
+        healthGauge.SetHealth(hp, maxHp);
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
+    }
+
+    void OnDestroy()
+    {
+        healthGauge?.Destroy();
     }
 
     void Update()
@@ -151,7 +163,8 @@ public class Boss2 : MonoBehaviour
         if (collision.CompareTag("Bullet"))
         {
             Destroy(collision.gameObject);
-            hp--;
+            hp = Mathf.Max(0, hp - 1);
+            healthGauge?.SetHealth(hp, maxHp);
             StartCoroutine(FlashRoutine());
             if (hp <= 0) Defeat();
         }
