@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1406345452340815894}
   - component: {fileID: 1406345452340815895}
   m_Layer: 0
-  m_Name: Tank Enemy
+  m_Name: St3 Tank Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,13 +110,14 @@ MonoBehaviour:
   minDescentSpeed: 0.8
   maxDescentSpeed: 1.8
   enemyBulletPrefab: {fileID: 9028439366270882026, guid: b27883967321e4e468e2ad2b9ebd95d6, type: 3}
-  shotInterval: 4
+  attackPattern: 0
+  spreadAngle: 20
+  burstCount: 4
+  burstDelay: 0.13
   minShotInterval: 2.5
   maxShotInterval: 4
-  minBulletSpeed: 1
-  maxBulletSpeed: 2
-  minBulletScale: 0.15
-  maxBulletScale: 0.35
+  bulletSpeed: 2
+  bulletScaleRatio: 2.2
   spawnYOffset: 1
   minMoveXRange: 1
   maxMoveXRange: 2.3
@@ -126,12 +127,9 @@ MonoBehaviour:
   scoreValue: 300
   killSound: {fileID: 0}
   killVolume: 1
-  bulletSpeed: 2
-  bulletScaleRatio: 2.2
-  attackPattern: 3
-  spreadAngle: 20
-  burstCount: 4
-  burstDelay: 0.13
+  explosionPrefab: {fileID: 0}
+  itemPrefab: {fileID: 0}
+  dropChance: 0.2
 --- !u!61 &1406345452340815895
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -170,7 +168,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4.74, y: 3.56}
+    oldSize: {x: 5.12, y: 5.12}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

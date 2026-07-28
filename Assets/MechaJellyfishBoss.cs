@@ -9,13 +9,13 @@ public class MechaJellyfishBoss : MonoBehaviour
     [SerializeField] private int scoreValue = 1000;
     [SerializeField] private float stopY = 3.2f;
     [SerializeField] private float moveSpeed = 1.4f;
-    [SerializeField] private float attackInterval = 1.6f;
+    [SerializeField] private float attackInterval = 1.6f; 
 
     [Header("弾設定")]
     [SerializeField] private GameObject enemyBulletPrefab;
     [SerializeField] private float bulletSpeed = 4.2f;
     [SerializeField] private float bulletScale = 0.6f;
-    [SerializeField] private int burstCount = 4;
+    [SerializeField] private int burstCount = 3;
     [SerializeField] private float burstDelay = 0.16f;
     [SerializeField] private float diagonalAngle = 14f;
 
@@ -93,7 +93,6 @@ public class MechaJellyfishBoss : MonoBehaviour
 
     void FireVolley()
     {
-        // 正面、左斜め、右斜めへ同時に撃つ。
         FireBullet(0f);
         FireBullet(diagonalAngle);
         FireBullet(-diagonalAngle);
@@ -223,23 +222,27 @@ public class MechaJellyfishBoss : MonoBehaviour
 
         if (currentHealth > 0) return;
 
-        if (attackCoroutine != null)
+        // 体力が0になったら撃破処理へ
+        Defeat();
+    }
+
+    // ★追加：撃破時の処理（通常クリアとエンドレス対応）
+    void Defeat()
+    {
+        Debug.Log("クラゲボスを撃破！");
+
+        if (attackCoroutine != null) StopCoroutine(attackCoroutine);
+        if (blackoutObject != null) Destroy(blackoutObject);
+        if (healthGaugeObject != null) Destroy(healthGaugeObject);
+
+        if (StageManager.Instance != null)
         {
-            StopCoroutine(attackCoroutine);
+            // スコアを加算
+            StageManager.Instance.AddScore(scoreValue);
+            // 撃破を報告（通常ならクリア画面へ、エンドレスなら再開へ）
+            StageManager.Instance.OnBossDefeated();
         }
 
-        if (blackoutObject != null)
-        {
-            Destroy(blackoutObject);
-        }
-
-        if (healthGaugeObject != null)
-        {
-            Destroy(healthGaugeObject);
-        }
-
-        StageManager.Instance?.AddScore(scoreValue);
-        StageManager.Instance?.TriggerClear();
         Destroy(gameObject);
     }
 }

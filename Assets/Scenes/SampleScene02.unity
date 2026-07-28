@@ -1584,6 +1584,8 @@ MonoBehaviour:
   shieldEnemySpawnInterval: 13
   shieldEnemyInitialDelay: 3
   shieldEnemyMaxCount: 1
+  defeatDropItemPrefab: {fileID: 0}
+  defeatDropChance: 0
   warshipFormationPrefab: {fileID: 6100000000000000001, guid: c15a39dc0b2341d5a902e6cacbcb2ce4, type: 3}
   blueWarshipSpawnInterval: 3
   blueWarshipInitialDelay: 10
@@ -1722,7 +1724,7 @@ MonoBehaviour:
   - {fileID: 810262531}
   - {fileID: 1082654652}
   bossPrefab: {fileID: 3387409246464115287, guid: a03011286fe874c709e96401e7187a3d, type: 3}
-  clearThreshold: 18000
+  clearThreshold: 3000
   bossPrefabs:
   - {fileID: 3387409246464115287, guid: a03011286fe874c709e96401e7187a3d, type: 3}
   - {fileID: 6300000000000000001, guid: 4a387429b1bd448f9e29faac910ebb5d, type: 3}
@@ -2414,10 +2416,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1039667529}
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
-      propertyPath: shieldWorldSize
-      value: 1.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: shotInterval
       value: 0.2
       objectReference: {fileID: 0}
@@ -2436,6 +2434,10 @@ PrefabInstance:
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: explosionVolume
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: shieldWorldSize
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: 'lifeIcons.Array.data[0]'

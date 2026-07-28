@@ -212,12 +212,17 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // ★追加：画面の外にいるときは、弾が当たっても無視する
+        if (!IsOnScreen()) return;
+
+        // 自機の弾（Bulletタグ）に当たった場合
         if (collision.gameObject.CompareTag("Bullet"))
         {
             Bullet bullet = collision.gameObject.GetComponent<Bullet>();
             int damage = bullet != null ? bullet.attackPower : 1;
-            Destroy(collision.gameObject);
-            TakeDamage(damage);
+
+            Destroy(collision.gameObject); // 当たった弾を消す
+            TakeDamage(damage);            // ダメージ処理へ
         }
     }
 

@@ -9,7 +9,7 @@ public class Boss2 : MonoBehaviour
     public float stopY = 3.0f;       
     public float moveSpeed = 1.5f;   
     public float attackInterval = 2.0f; 
-    public int scoreValue = 1000;    // ★追加：ボスを倒した時にもらえるスコア
+    public int scoreValue = 1000;    
 
     [Header("弾のプレハブ")]
     public GameObject normalBullet;
@@ -19,6 +19,10 @@ public class Boss2 : MonoBehaviour
     public float ringBulletSpeed = 2.5f;
     public float ringBulletScale = 0.3f;
     public int ringBulletCount = 36;     
+    // ★追加設定
+    public int ringRepeatCount = 3;      // 何連続で撃つか
+    public float ringRepeatDelay = 0.4f; // 連射の間隔（秒）
+    public float ringOffsetAngle = 5f;   // 次の連射でずらす角度（度）
 
     [Header("2. 3方向スタン攻撃 (Stun)")]
     public float stunBulletSpeed = 4.0f;
@@ -68,23 +72,34 @@ public class Boss2 : MonoBehaviour
         {
             yield return new WaitForSeconds(attackInterval);
             int attackType = Random.Range(0, 4);
-            if (attackType == 0) RingShot();
+            
+            if (attackType == 0) StartCoroutine(RingShotRoutine()); // ★コルーチンに変更
             else if (attackType == 1) StunTripleShot();
             else if (attackType == 2) StartCoroutine(TargetBurstRoutine());
             else LineShot();
         }
     }
 
-    void RingShot()
+    // ★修正：3連射＆角度ずらしを行う処理
+    IEnumerator RingShotRoutine()
     {
         float angleStep = 360f / ringBulletCount;
-        float angle = 0f;
-        for (int i = 0; i < ringBulletCount; i++)
+
+        for (int j = 0; j < ringRepeatCount; j++)
         {
-            Quaternion rotation = Quaternion.Euler(0, 0, angle);
-            GameObject b = Instantiate(normalBullet, transform.position, rotation);
-            SetupBullet(b, ringBulletSpeed, ringBulletScale);
-            angle += angleStep;
+            // 連射ごとに開始角度をずらす (1回目:0度, 2回目:5度, 3回目:10度...)
+            float startAngle = j * ringOffsetAngle;
+
+            for (int i = 0; i < ringBulletCount; i++)
+            {
+                float angle = startAngle + (i * angleStep);
+                Quaternion rotation = Quaternion.Euler(0, 0, angle);
+                GameObject b = Instantiate(normalBullet, transform.position, rotation);
+                SetupBullet(b, ringBulletSpeed, ringBulletScale);
+            }
+            
+            // 次の連射まで少し待機
+            yield return new WaitForSeconds(ringRepeatDelay);
         }
     }
 
@@ -152,15 +167,12 @@ public class Boss2 : MonoBehaviour
         }
     }
 
-    // 撃破時の処理
     void Defeat()
     {
         Debug.Log("ボスを倒した！");
         if (StageManager.Instance != null)
         {
-            // ★追加：撃破スコアを加算する
             StageManager.Instance.AddScore(scoreValue);
-            // 撃破を報告（通常ステージならクリア、エンドレスなら続行）
             StageManager.Instance.OnBossDefeated();
         }
         Destroy(gameObject);

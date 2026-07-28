@@ -16,6 +16,7 @@ public class Boss3 : MonoBehaviour
     public float stopY = 3.2f;             // 登場後に停止するY座標
     public float entrySpeed = 1.6f;        // 登場時に下降してくる速さ
     public float attackInterval = 1.8f;    // 攻撃と攻撃の間隔（秒）
+    
 
     [Header("左右移動（動き回る挙動）")]
     public float swaySpeed = 2.2f;         // 左右に動く速さ
@@ -244,9 +245,13 @@ public class Boss3 : MonoBehaviour
     void Defeat()
     {
         Debug.Log("サンダーロードを撃破！ステージ3クリア！");
-        // スコア加算とクリア処理は StageManager に委ねる（ランキング保存まで一括で行われる）
-        StageManager.Instance?.AddScore(scoreValue);
-        StageManager.Instance?.TriggerClear();
+        if (StageManager.Instance != null)
+        {
+            // ★追加：撃破スコアを加算する
+            StageManager.Instance.AddScore(scoreValue);
+            // 撃破を報告（通常ステージならクリア、エンドレスなら続行）
+            StageManager.Instance.OnBossDefeated();
+        }
         Destroy(gameObject);
     }
 }
