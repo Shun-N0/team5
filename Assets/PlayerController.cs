@@ -386,7 +386,11 @@ public class PlayerController : MonoBehaviour
         spriteRenderer.enabled = false;
         isInvincible = true; 
         yield return new WaitForSeconds(gameOverDelay);
-        SceneManager.LoadScene("GameOverScene");
+        // 自分で移動せず、StageManagerの命令を呼び出す
+        if (StageManager.Instance != null)
+            {
+                StageManager.Instance.TriggerGameOver();
+            }
     }
 
     void UpdateLifeUI()

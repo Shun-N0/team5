@@ -103,10 +103,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 571a860dd8024eb080743f41bfebee73, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Boss3
   maxHp: 150
-  scoreValue: 1500
+  scoreValue: 6000
   stopY: 3.2
   entrySpeed: 1.6
   attackInterval: 1.4
@@ -173,7 +173,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.27, y: 4.13}
+    oldSize: {x: 4, y: 2.9882812}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

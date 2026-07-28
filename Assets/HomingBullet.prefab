@@ -106,7 +106,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomingBullet
   speed: 5
-  shiftDistance: 3
+  shiftDistance: 2
 --- !u!61 &7241383728195853778
 BoxCollider2D:
   m_ObjectHideFlags: 0

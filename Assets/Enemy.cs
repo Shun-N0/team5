@@ -11,24 +11,22 @@ public class Enemy : MonoBehaviour
 
     [Header("攻撃設定")]
     public GameObject enemyBulletPrefab;
-    public float shotInterval = 3f;
     private float timer;
+    private bool hasFirstShotFired = false; // ★追加：最初の1発を撃ったかどうかのフラグ
 
-    // ★追加：攻撃パターンの種類
-    // デフォルトは Straight（まっすぐ1発）なので、既存の敵の挙動は一切変わりません
     public enum AttackPattern
     {
-        Straight, // まっすぐ1発（従来通り）
+        Straight, // まっすぐ1発
         ThreeWay, // 左右に広がる3方向弾
         Aimed,    // プレイヤーを狙い撃ち
         Burst     // 短い間隔での連射
     }
 
     [Header("攻撃パターン設定")]
-    public AttackPattern attackPattern = AttackPattern.Straight; // 発射パターン
-    public float spreadAngle = 20f;   // ThreeWay時、真下から左右へ広げる角度（度）
-    public int burstCount = 3;        // Burst時に連射する弾数
-    public float burstDelay = 0.12f;  // Burst時の弾と弾の間隔（秒）
+    public AttackPattern attackPattern = AttackPattern.Straight; 
+    public float spreadAngle = 20f;   
+    public int burstCount = 3;        
+    public float burstDelay = 0.12f;  
 
     [Header("弾の設定")]
     public float minShotInterval = 1.0f;
@@ -63,10 +61,9 @@ public class Enemy : MonoBehaviour
     [Header("エフェクト設定")]
     public GameObject explosionPrefab; 
 
-    // ★追加：アイテムドロップ設定
     [Header("アイテムドロップ設定")]
-    public GameObject itemPrefab; // 落としたいアイテムのプレハブ
-    [Range(0f, 1f)] public float dropChance = 0.2f; // アイテムが落ちる確率 (0.2 = 20%)
+    public GameObject itemPrefab; 
+    [Range(0f, 1f)] public float dropChance = 0.2f; 
 
     public void SetItemDrop(GameObject newItemPrefab, float newDropChance)
     {
@@ -78,11 +75,13 @@ public class Enemy : MonoBehaviour
     {
         currentHealth = maxHealth;
         InitializeEnemy();
-        timer = Random.Range(0f, currentShotInterval);
+        // ここではまだ撃たず、Updateで画面内判定を待ちます
+        timer = 0f;
     }
 
     void Update()
     {
+        // 1. 移動処理
         float xMove = direction * speed * Time.deltaTime;
         float yMove = -descentSpeed * Time.deltaTime;
         transform.Translate(new Vector3(xMove, yMove, 0));
@@ -100,65 +99,70 @@ public class Enemy : MonoBehaviour
 
         if (transform.position.y < -5.5f) { Destroy(gameObject); }
 
+        // 2. 射撃処理
         if (IsOnScreen())
         {
-            timer += Time.deltaTime;
-            if (timer > currentShotInterval)
+            // ★追加：画面に入った瞬間、まだ1発目も撃っていない場合
+            if (!hasFirstShotFired)
             {
                 Shoot();
-                timer = 0;
+                hasFirstShotFired = true; // フラグを立てる
+                timer = 0f; // インターバルのカウントを開始
+                // 次のインターバルをランダムに決める
                 currentShotInterval = Random.Range(minShotInterval, maxShotInterval);
+            }
+            else
+            {
+                // 通常のインターバル射撃
+                timer += Time.deltaTime;
+                if (timer > currentShotInterval)
+                {
+                    Shoot();
+                    timer = 0;
+                    currentShotInterval = Random.Range(minShotInterval, maxShotInterval);
+                }
             }
         }
     }
 
     bool IsOnScreen()
     {
+        // カメラの視界（少し余裕を持って、完全に姿が見えてから判定）
         float cameraTop = Camera.main.transform.position.y + Camera.main.orthographicSize;
-        return transform.position.y <= cameraTop;
+        return transform.position.y < (cameraTop - 0.2f); // 0.2ほど内側に入ったらON
     }
 
-    void Shoot()
+    public void Shoot()
     {
         if (enemyBulletPrefab == null) return;
 
-        // 攻撃パターンごとに発射方法を切り替える
         switch (attackPattern)
         {
             case AttackPattern.ThreeWay:
-                // 真下を中心に、左右へ spreadAngle 度ずつ広げた3発を撃つ
                 FireBullet(RotateDir(Vector2.down, -spreadAngle));
                 FireBullet(Vector2.down);
                 FireBullet(RotateDir(Vector2.down, spreadAngle));
                 break;
-
             case AttackPattern.Aimed:
-                // プレイヤーの位置を狙って1発撃つ
                 FireBullet(GetAimDirection());
                 break;
-
             case AttackPattern.Burst:
-                // 短い間隔で連射する（時間差発射のためコルーチンを使う）
                 StartCoroutine(BurstFire());
                 break;
-
-            default: // Straight（従来通り：まっすぐ1発）
+            default:
                 FireBullet(Vector2.down);
                 break;
         }
     }
 
-    // 指定した方向へ弾を1発撃つ共通処理
-    void FireBullet(Vector2 direction)
+    void FireBullet(Vector2 fireDirection)
     {
         GameObject bullet = Instantiate(enemyBulletPrefab, transform.position, Quaternion.identity);
         bullet.transform.localScale = new Vector3(currentBulletScale, currentBulletScale, 1);
         bullet.SendMessage("SetSpeed", currentBulletSpeed, SendMessageOptions.DontRequireReceiver);
-        // 弾が方向指定に対応していれば向きを設定する（未対応の弾は無視される）
-        bullet.SendMessage("SetDirection", direction, SendMessageOptions.DontRequireReceiver);
+        bullet.SendMessage("SetDirection", fireDirection, SendMessageOptions.DontRequireReceiver);
     }
 
-    // Burst：burstCount 発を burstDelay 間隔で真下へ連射する
     System.Collections.IEnumerator BurstFire()
     {
         for (int i = 0; i < burstCount; i++)
@@ -168,7 +172,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // ベクトルを angle 度だけ回転させる（ThreeWayの拡散に使用）
     Vector2 RotateDir(Vector2 dir, float angle)
     {
         float rad = angle * Mathf.Deg2Rad;
@@ -177,7 +180,6 @@ public class Enemy : MonoBehaviour
         return new Vector2(dir.x * cos - dir.y * sin, dir.x * sin + dir.y * cos);
     }
 
-    // プレイヤーの方向を求める（見つからなければ真下）
     Vector2 GetAimDirection()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -210,40 +212,33 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // ★追加：画面の外にいるときは、弾が当たっても無視する
+        if (!IsOnScreen()) return;
+
+        // 自機の弾（Bulletタグ）に当たった場合
         if (collision.gameObject.CompareTag("Bullet"))
         {
             Bullet bullet = collision.gameObject.GetComponent<Bullet>();
             int damage = bullet != null ? bullet.attackPower : 1;
 
-            Destroy(collision.gameObject);
-            TakeDamage(damage);
+            Destroy(collision.gameObject); // 当たった弾を消す
+            TakeDamage(damage);            // ダメージ処理へ
         }
     }
 
     void TakeDamage(int damage)
     {
         currentHealth -= damage;
-
         if (currentHealth > 0) return;
 
-        // ★追加：撃破された瞬間にアイテムを生成する（確率判定）
         if (itemPrefab != null && Random.value < dropChance)
         {
-            // アイテムをその場に生成
             Instantiate(itemPrefab, transform.position, Quaternion.identity);
         }
 
-        if (explosionPrefab != null)
-        {
-            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-        }
+        if (explosionPrefab != null) Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        if (killSound != null && StageManager.Instance != null) StageManager.Instance.PlaySE(killSound, killVolume);
 
-        if (killSound != null && StageManager.Instance != null)
-        {
-            StageManager.Instance.PlaySE(killSound, killVolume);
-        }
-
-        Debug.Log("敵を撃破！");
         StageManager.Instance?.AddScore(scoreValue);
         Destroy(gameObject);
     }

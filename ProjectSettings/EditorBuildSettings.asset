@@ -23,5 +23,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene02.unity
     guid: e590342099bed4aac806958fbc552235
+  - enabled: 1
+    path: Assets/Scenes/EndlessScene.unity
+    guid: c3885bab672ba48509dc7f05cf70b9f2
+  - enabled: 1
+    path: Assets/Scenes/EndlessResultScene.unity
+    guid: 57c958f2eaf864894997a3ff1694adc2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

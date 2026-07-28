@@ -106,25 +106,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 2
-  descentSpeed: 0.5
+  descentSpeed: 1
   minDescentSpeed: 0.8
   maxDescentSpeed: 1.8
   enemyBulletPrefab: {fileID: 5112081579806053982, guid: e78ad4ad37e4c408fb86a9c428f7c13e, type: 3}
-  shotInterval: 10
+  shotInterval: 1
+  attackPattern: 0
+  spreadAngle: 20
+  burstCount: 3
+  burstDelay: 0.12
   minShotInterval: 0.8
   maxShotInterval: 1.5
-  bulletSpeed: 1.5
+  bulletSpeed: 3
   bulletScaleRatio: 1
   spawnYOffset: 1
   minMoveXRange: 1
   maxMoveXRange: 2.3
   minScale: 0.15
   maxScale: 0.3
-  maxHealth: 1
-  scoreValue: 300
+  maxHealth: 2
+  scoreValue: 200
   killSound: {fileID: 8300000, guid: dbabc3d1759b14fd2aa1698cb30c7ded, type: 3}
   killVolume: 0.1
   explosionPrefab: {fileID: 8408093115305735814, guid: a9d1d247b7e02459389c0f86d5394991, type: 3}
+  itemPrefab: {fileID: 0}
+  dropChance: 0.2
 --- !u!60 &770458122755479857
 PolygonCollider2D:
   m_ObjectHideFlags: 0

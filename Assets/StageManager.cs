@@ -7,29 +7,35 @@ using TMPro;
 public class StageManager : MonoBehaviour
 {
     private const string HighScoreKey = "HighScore";
+    private const string SavedSceneKey = "SavedScene";
     private const string RankingCountKey = "RankingCount";
     private const string RankingScoreKey = "Ranking_";
     private const int MaxRankingCount = 5; 
 
     public static StageManager Instance { get; private set; }
 
-    [Header("スコア表示")]
+    [Header("モード設定")]
+    public bool isEndless = false;   
+
+    [Header("UI表示")]
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI highScoreText;
-    private int score = 0;
-    private int highScore = 0;
-
-    [Header("HP表示（赤丸アイコン）")]
     [SerializeField] private GameObject[] hpCircles; 
 
-    // --- ★ここがステージごとの切り替え設定 ---
-    [Header("ステージクリア条件")]
-    public GameObject goalLine;      // ステージ1用：GoalLineオブジェクトを入れる
-    public GameObject bossPrefab;    // ステージ2用：ボスのプレハブを入れる
-    public int clearThreshold = 2000; // クリア（ボス出現）に必要なスコア
-    public float goalLineAppearDelay = 0f; // ゴールラインを出すまでの待ち時間
-    private bool isConditionMet = false; 
+    [Header("通常ステージ用 設定")]
+    public GameObject bossPrefab;    
+    public int clearThreshold = 2000; 
 
+    [Header("エンドレスモード用 設定")]
+    public List<GameObject> bossPrefabs; 
+    public int bossIntervalScore = 5000; 
+    
+    private int score = 0;
+    private int highScore = 0;
+    private int nextBossScore;           
+    private int currentBossIndex = 0;    
+    private bool isBossActive = false;   
+    private bool isConditionMet = false; 
     private bool cleared;
     private bool gameOver;
     private AudioSource seAudioSource;
@@ -38,14 +44,12 @@ public class StageManager : MonoBehaviour
     {
         Instance = this;
         seAudioSource = gameObject.AddComponent<AudioSource>();
-        
-        // ゴールラインが設定されている場合は、最初は隠しておく
-        if (goalLine != null) goalLine.SetActive(false);
+        nextBossScore = bossIntervalScore; 
     }
 
     void Start()
     {
-        PlayerPrefs.SetString("SavedScene", SceneManager.GetActiveScene().name);
+        PlayerPrefs.SetString(SavedSceneKey, SceneManager.GetActiveScene().name);
         PlayerPrefs.Save();
 
         highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
@@ -54,69 +58,87 @@ public class StageManager : MonoBehaviour
         UpdateHPUI(hpCircles != null ? hpCircles.Length : 3);
     }
 
+    public void PlaySE(AudioClip clip, float volume) { if (clip != null) seAudioSource.PlayOneShot(clip, volume); }
+    public void AddKill() { AddScore(100); }
+
     public void AddScore(int addedScore)
     {
         score += addedScore;
-        UpdateHighScore();
         UpdateScoreUI();
-        UpdateHighScoreUI();
+        UpdateHighScore();
 
-        // 目標スコアに達した時の判定
-        if (!isConditionMet && score >= clearThreshold)
+        if (isEndless)
         {
-            isConditionMet = true;
-            HandleStageGoal();
+            if (!isBossActive && score >= nextBossScore)
+            {
+                isBossActive = true;
+                SpawnEndlessBoss();
+            }
+        }
+        else
+        {
+            if (!isConditionMet && score >= clearThreshold)
+            {
+                isConditionMet = true;
+                SpawnNormalBoss();
+            }
         }
     }
 
-    // スコア達成時の挙動
-    void HandleStageGoal()
+    void SpawnNormalBoss()
     {
-        // ステージ1：ゴールラインを出現させる
-        if (goalLine != null)
-        {
-            if (goalLineAppearDelay > 0f)
-            {
-                StartCoroutine(ShowGoalLineAfterDelay());
-            }
-            else
-            {
-                ShowGoalLine();
-            }
-        }
-
-        // ステージ2：ボスを出現させる
         if (bossPrefab != null)
         {
             if (EnemySpawner.Instance != null) EnemySpawner.Instance.StopSpawning();
             Instantiate(bossPrefab, new Vector3(0, 6, 0), Quaternion.identity);
-            Debug.Log("ボス出現！");
         }
     }
 
-    IEnumerator ShowGoalLineAfterDelay()
+    void SpawnEndlessBoss()
     {
-        yield return new WaitForSeconds(goalLineAppearDelay);
-        ShowGoalLine();
+        if (bossPrefabs == null || bossPrefabs.Count == 0) return;
+        if (EnemySpawner.Instance != null) EnemySpawner.Instance.StopSpawning();
+        GameObject bossToSpawn = bossPrefabs[currentBossIndex];
+        Instantiate(bossToSpawn, new Vector3(0, 6, 0), Quaternion.identity);
+        currentBossIndex = (currentBossIndex + 1) % bossPrefabs.Count;
     }
 
-    void ShowGoalLine()
+    public void OnBossDefeated()
     {
-        if (goalLine == null || goalLine.activeSelf) return;
-
-        goalLine.SetActive(true);
-        Debug.Log("ゴールライン出現！");
+        if (isEndless)
+        {
+            isBossActive = false;
+            nextBossScore = score + bossIntervalScore;
+            if (EnemySpawner.Instance != null) EnemySpawner.Instance.ResumeSpawning();
+        }
+        else
+        {
+            // ★修正：ネスト（入れ子）を解消して TriggerClear を呼ぶ
+            TriggerClear();
+        }
     }
 
-    // --- 以下、ランキングやHP更新の既存コードはそのまま ---
-    public void PlaySE(AudioClip clip, float volume) { if (clip != null) seAudioSource.PlayOneShot(clip, volume); }
-    public void AddKill() { AddScore(100); }
     public void UpdateHP(int currentLives) { UpdateHPUI(currentLives); }
-    
+
     public void TriggerClear()
     {
         if (cleared) return;
         cleared = true;
+
+        // ★ステージ進捗の保存
+        int currentStageNum = 1; 
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName.Contains("01")) currentStageNum = 1;
+        else if (sceneName.Contains("02")) currentStageNum = 2;
+        else if (sceneName.Contains("03")) currentStageNum = 3;
+
+        int savedProgress = PlayerPrefs.GetInt("StageProgress", 0);
+        if (currentStageNum > savedProgress)
+        {
+            PlayerPrefs.SetInt("StageProgress", currentStageNum);
+            PlayerPrefs.Save();
+        }
+
         PlayerPrefs.SetInt("ClearScore", score);
         SaveScoreToRanking(score);
         SceneManager.LoadScene("Clear Game");
@@ -126,7 +148,11 @@ public class StageManager : MonoBehaviour
     {
         if (gameOver) return;
         gameOver = true;
-        SceneManager.LoadScene("GameOverScene");
+        PlayerPrefs.SetInt("ClearScore", score);
+        PlayerPrefs.Save();
+
+        if (isEndless) SceneManager.LoadScene("EndlessResultScene");
+        else SceneManager.LoadScene("GameOverScene");
     }
 
     private void SaveScoreToRanking(int newScore)
@@ -142,11 +168,8 @@ public class StageManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    private void UpdateScoreUI() { if (scoreText != null) scoreText.text = "Score: " + score; }
-    private void UpdateHighScore() { if (score > highScore) { highScore = score; PlayerPrefs.SetInt(HighScoreKey, highScore); PlayerPrefs.Save(); } }
-    private void UpdateHighScoreUI() { if (highScoreText != null) highScoreText.text = "High Score: " + highScore; }
-    private void UpdateHPUI(int currentLives) {
-        if (hpCircles == null) return;
-        for (int i = 0; i < hpCircles.Length; i++) if (hpCircles[i] != null) hpCircles[i].SetActive(i < currentLives);
-    }
+    private void UpdateScoreUI() { if (scoreText != null) scoreText.text = "Score: " + score.ToString("N0"); }
+    private void UpdateHighScore() { if (score > highScore) { highScore = score; PlayerPrefs.SetInt(HighScoreKey, highScore); UpdateHighScoreUI(); } }
+    private void UpdateHighScoreUI() { if (highScoreText != null) highScoreText.text = "High Score: " + highScore.ToString("N0"); }
+    private void UpdateHPUI(int currentLives) { if (hpCircles == null) return; for (int i = 0; i < hpCircles.Length; i++) if (hpCircles[i] != null) hpCircles[i].SetActive(i < currentLives); }
 }

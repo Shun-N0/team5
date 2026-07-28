@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    // 外部からこのスポナーにアクセスできるようにする（重要！）
     public static EnemySpawner Instance { get; private set; }
 
+    [Header("ザコ敵のプレハブ")]
     public GameObject enemyPrefab;         
     public GameObject triangleEnemyPrefab; 
 
@@ -14,17 +14,18 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("スタン敵設定")]
     public GameObject stunEnemyPrefab;
-    [Range(0f, 1f)] public float stunEnemySpawnChance = 0.15f;
-    public int stunEnemyMaxCount = 0;             // このステージで出す最大数（0 = 無制限）
+    public float stunEnemySpawnInterval = 20f; // 秒数管理
+    public float stunEnemyInitialDelay = 5f;   
+    public int stunEnemyMaxCount = 0;          
 
     [Header("バリアアイテムを落とす敵設定")]
-    public GameObject shieldEnemyPrefab;          // バリア(シールド)アイテムを確定で落とす敵
-    public float shieldEnemySpawnInterval = 15f;  // 出現する間隔（秒）
-    public float shieldEnemyInitialDelay = 3f;    // 最初に出現するまでの待ち時間（秒）
-    public int shieldEnemyMaxCount = 0;           // このステージで出す最大数（0 = 無制限）
+    public GameObject shieldEnemyPrefab;          
+    public float shieldEnemySpawnInterval = 25f;  
+    public float shieldEnemyInitialDelay = 3f;    
+    public int shieldEnemyMaxCount = 0;           
 
     [Header("撃破時アイテムドロップ設定")]
-    public GameObject defeatDropItemPrefab;        // 敵を倒した時に落とすアイテム
+    public GameObject defeatDropItemPrefab;        
     [Range(0f, 1f)] public float defeatDropChance = 0f;
 
     [Header("軍艦編隊設定")]
@@ -52,17 +53,15 @@ public class EnemySpawner : MonoBehaviour
     private float blueWarshipTimer;
     private float redWarshipTimer;
     private float shieldEnemyTimer;
+    private float stunEnemyTimer;
 
-    // ★追加：アイテム敵をこれまでに何体出したかのカウンタ（最大数制限に使用）
     private int shieldEnemySpawnedCount = 0;
     private int stunEnemySpawnedCount = 0;
 
-    // ★追加：ボスの間、生成を止めるためのフラグ
     private bool isSpawningStopped = false;
 
     void Awake()
     {
-        // シングルトン設定（外部から呼びやすくするため）
         if (Instance == null) Instance = this;
     }
 
@@ -72,30 +71,22 @@ public class EnemySpawner : MonoBehaviour
         blueWarshipTimer = blueWarshipInitialDelay;
         redWarshipTimer = redWarshipInitialDelay;
         shieldEnemyTimer = shieldEnemyInitialDelay;
+        stunEnemyTimer = stunEnemyInitialDelay;
     }
 
     void Update()
     {
-        // ★追加：生成が停止されている場合は、何もしない（他のシーンでは常にfalseなので干渉しません）
         if (isSpawningStopped) return;
 
-        // --- 難易度上昇タイマー ---
         difficultyTimer += Time.deltaTime;
         if (difficultyTimer >= difficultyInterval)
         {
             difficultyTimer = 0f;
             currentSpawnInterval = Mathf.Max(currentSpawnInterval - spawnIntervalDecrement, minSpawnInterval);
-            Debug.Log("難易度アップ！出現間隔: " + currentSpawnInterval + "秒");
         }
 
-        // --- 敵のスポーンタイマー ---
         int currentEnemyCount = FindObjectsByType<Enemy>(FindObjectsSortMode.None).Length;
-        // WarshipUnitのカウント（もしスクリプトが存在しなければ無視されます）
-        // currentEnemyCount += FindObjectsByType<WarshipUnit>(FindObjectsSortMode.None).Length;
-
-        float adjustedInterval = currentEnemyCount < targetEnemyCount
-            ? currentSpawnInterval * 0.3f  
-            : currentSpawnInterval;        
+        float adjustedInterval = currentEnemyCount < targetEnemyCount ? currentSpawnInterval * 0.3f : currentSpawnInterval;        
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer >= adjustedInterval)
@@ -106,37 +97,44 @@ public class EnemySpawner : MonoBehaviour
 
         UpdateWarshipSpawns();
         UpdateShieldEnemySpawn();
+        UpdateStunEnemySpawn();
     }
 
-    // ★追加：バリアアイテムを落とす敵を一定間隔で出現させる
+    private void UpdateStunEnemySpawn()
+    {
+        if (stunEnemyPrefab == null) return;
+        if (stunEnemyMaxCount > 0 && stunEnemySpawnedCount >= stunEnemyMaxCount) return;
+
+        stunEnemyTimer -= Time.deltaTime;
+        if (stunEnemyTimer <= 0f)
+        {
+            SpawnWithImmediateShoot(stunEnemyPrefab); 
+            stunEnemyTimer = stunEnemySpawnInterval;
+            stunEnemySpawnedCount++;
+        }
+    }
+
     private void UpdateShieldEnemySpawn()
     {
         if (shieldEnemyPrefab == null) return;
-
-        // ★追加：最大数に達していたら、もう出さない（0のときは無制限）
         if (shieldEnemyMaxCount > 0 && shieldEnemySpawnedCount >= shieldEnemyMaxCount) return;
 
         shieldEnemyTimer -= Time.deltaTime;
         if (shieldEnemyTimer <= 0f)
         {
-            // 敵自身のStart()で画面上部のランダムな位置に配置されるため、原点で生成してよい
             GameObject enemy = Instantiate(shieldEnemyPrefab, Vector3.zero, Quaternion.identity);
             ApplyDefeatDropSetting(enemy);
             shieldEnemyTimer = shieldEnemySpawnInterval;
             shieldEnemySpawnedCount++;
-            Debug.Log("バリアアイテムを持った敵が出現！");
         }
     }
 
-    // ★追加：外部（StageManagerなど）から生成を止めるための命令
-    public void StopSpawning()
-    {
-        isSpawningStopped = true;
-        Debug.Log("ボス出現のため、ザコ敵の生成を停止しました。");
-    }
+    public void StopSpawning() { isSpawningStopped = true; }
+    public void ResumeSpawning() { isSpawningStopped = false; spawnTimer = 0f; difficultyTimer = 0f; }
 
     void SpawnEnemy()
     {
+        // 1. 耐久敵の抽選
         if (tankEnemyPrefab != null && Random.value < tankEnemySpawnChance)
         {
             GameObject enemy = Instantiate(tankEnemyPrefab, Vector3.zero, Quaternion.identity);
@@ -144,18 +142,8 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        // ★追加：最大数に達していないときだけスタン敵を出す（stunEnemyMaxCount が0なら無制限）
-        if (stunEnemyPrefab != null && Random.value < stunEnemySpawnChance
-            && (stunEnemyMaxCount <= 0 || stunEnemySpawnedCount < stunEnemyMaxCount))
-        {
-            GameObject enemy = Instantiate(stunEnemyPrefab, Vector3.zero, Quaternion.identity);
-            ApplyDefeatDropSetting(enemy);
-            stunEnemySpawnedCount++;
-            return;
-        }
-
+        // 2. 通常敵（四角か三角）の抽選
         GameObject prefabToSpawn = Random.value > 0.5f ? enemyPrefab : triangleEnemyPrefab;
-
         if (prefabToSpawn != null)
         {
             GameObject enemy = Instantiate(prefabToSpawn, Vector3.zero, Quaternion.identity);
@@ -166,48 +154,25 @@ public class EnemySpawner : MonoBehaviour
     private void ApplyDefeatDropSetting(GameObject enemyObject)
     {
         if (defeatDropItemPrefab == null || defeatDropChance <= 0f) return;
-
         Enemy enemy = enemyObject.GetComponent<Enemy>();
-        if (enemy != null)
-        {
-            enemy.SetItemDrop(defeatDropItemPrefab, defeatDropChance);
-        }
+        if (enemy != null) enemy.SetItemDrop(defeatDropItemPrefab, defeatDropChance);
     }
 
+    void SpawnWithImmediateShoot(GameObject prefab)
+    {
+        GameObject go = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+        go.SendMessage("Shoot", SendMessageOptions.DontRequireReceiver);
+        ApplyDefeatDropSetting(go);
+    }
 
     private void UpdateWarshipSpawns()
     {
         blueWarshipTimer -= Time.deltaTime;
         redWarshipTimer -= Time.deltaTime;
-
-        WarshipFormation[] formations =
-            FindObjectsByType<WarshipFormation>(FindObjectsSortMode.None);
-
-        bool blueFormationExists = false;
-        bool redFormationExists = false;
-
-        foreach (WarshipFormation formation in formations)
-        {
-            if (formation.Type == WarshipFormation.FormationType.FiveShips)
-                blueFormationExists = true;
-            else if (formation.Type == WarshipFormation.FormationType.ThreeShips)
-                redFormationExists = true;
-        }
-
-        if (!blueFormationExists &&
-            blueWarshipTimer <= 0f &&
-            warshipFormationPrefab != null)
-        {
-            Instantiate(warshipFormationPrefab, Vector3.zero, Quaternion.identity);
-            blueWarshipTimer = blueWarshipSpawnInterval;
-        }
-
-        if (!redFormationExists &&
-            redWarshipTimer <= 0f &&
-            redWarshipFormationPrefab != null)
-        {
-            Instantiate(redWarshipFormationPrefab, Vector3.zero, Quaternion.identity);
-            redWarshipTimer = redWarshipSpawnInterval;
-        }
+        WarshipFormation[] formations = FindObjectsByType<WarshipFormation>(FindObjectsSortMode.None);
+        bool bExists = false; bool rExists = false;
+        foreach (var f in formations) { if (f.Type == WarshipFormation.FormationType.FiveShips) bExists = true; else if (f.Type == WarshipFormation.FormationType.ThreeShips) rExists = true; }
+        if (!bExists && blueWarshipTimer <= 0f && warshipFormationPrefab != null) { Instantiate(warshipFormationPrefab, Vector3.zero, Quaternion.identity); blueWarshipTimer = blueWarshipSpawnInterval; }
+        if (!rExists && redWarshipTimer <= 0f && redWarshipFormationPrefab != null) { Instantiate(redWarshipFormationPrefab, Vector3.zero, Quaternion.identity); redWarshipTimer = redWarshipSpawnInterval; }
     }
 }
