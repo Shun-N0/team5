@@ -14,15 +14,19 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("スタン敵設定")]
     public GameObject stunEnemyPrefab;
-    public float stunEnemySpawnInterval = 20f; 
+    public float stunEnemySpawnInterval = 20f; // 秒数管理
     public float stunEnemyInitialDelay = 5f;   
     public int stunEnemyMaxCount = 0;          
 
     [Header("バリアアイテムを落とす敵設定")]
     public GameObject shieldEnemyPrefab;          
-    public float shieldEnemySpawnInterval = 15f;  
+    public float shieldEnemySpawnInterval = 25f;  
     public float shieldEnemyInitialDelay = 3f;    
     public int shieldEnemyMaxCount = 0;           
+
+    [Header("撃破時アイテムドロップ設定")]
+    public GameObject defeatDropItemPrefab;        
+    [Range(0f, 1f)] public float defeatDropChance = 0f;
 
     [Header("軍艦編隊設定")]
     public GameObject warshipFormationPrefab;
@@ -104,7 +108,7 @@ public class EnemySpawner : MonoBehaviour
         stunEnemyTimer -= Time.deltaTime;
         if (stunEnemyTimer <= 0f)
         {
-            SpawnWithImmediateShoot(stunEnemyPrefab); // ★修正：即時射撃させて生成
+            SpawnWithImmediateShoot(stunEnemyPrefab); 
             stunEnemyTimer = stunEnemySpawnInterval;
             stunEnemySpawnedCount++;
         }
@@ -118,7 +122,8 @@ public class EnemySpawner : MonoBehaviour
         shieldEnemyTimer -= Time.deltaTime;
         if (shieldEnemyTimer <= 0f)
         {
-            SpawnWithImmediateShoot(shieldEnemyPrefab); // ★修正：即時射撃させて生成
+            GameObject enemy = Instantiate(shieldEnemyPrefab, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
             shieldEnemyTimer = shieldEnemySpawnInterval;
             shieldEnemySpawnedCount++;
         }
@@ -129,25 +134,35 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
+        // 1. 耐久敵の抽選
         if (tankEnemyPrefab != null && Random.value < tankEnemySpawnChance)
         {
-            SpawnWithImmediateShoot(tankEnemyPrefab);
+            GameObject enemy = Instantiate(tankEnemyPrefab, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
             return;
         }
 
+        // 2. 通常敵（四角か三角）の抽選
         GameObject prefabToSpawn = Random.value > 0.5f ? enemyPrefab : triangleEnemyPrefab;
         if (prefabToSpawn != null)
         {
-            SpawnWithImmediateShoot(prefabToSpawn);
+            GameObject enemy = Instantiate(prefabToSpawn, Vector3.zero, Quaternion.identity);
+            ApplyDefeatDropSetting(enemy);
         }
     }
 
-    // ★追加：敵を生成し、即座に射撃命令を送るヘルパー関数
+    private void ApplyDefeatDropSetting(GameObject enemyObject)
+    {
+        if (defeatDropItemPrefab == null || defeatDropChance <= 0f) return;
+        Enemy enemy = enemyObject.GetComponent<Enemy>();
+        if (enemy != null) enemy.SetItemDrop(defeatDropItemPrefab, defeatDropChance);
+    }
+
     void SpawnWithImmediateShoot(GameObject prefab)
     {
         GameObject go = Instantiate(prefab, Vector3.zero, Quaternion.identity);
-        // 出現した瞬間にShoot関数を実行させる（SendMessageならどんな敵スクリプトにも対応可能）
         go.SendMessage("Shoot", SendMessageOptions.DontRequireReceiver);
+        ApplyDefeatDropSetting(go);
     }
 
     private void UpdateWarshipSpawns()

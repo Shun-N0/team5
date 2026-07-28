@@ -2414,6 +2414,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1039667529}
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: shieldWorldSize
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: shotInterval
       value: 0.2
       objectReference: {fileID: 0}

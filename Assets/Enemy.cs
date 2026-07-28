@@ -65,6 +65,12 @@ public class Enemy : MonoBehaviour
     public GameObject itemPrefab; 
     [Range(0f, 1f)] public float dropChance = 0.2f; 
 
+    public void SetItemDrop(GameObject newItemPrefab, float newDropChance)
+    {
+        itemPrefab = newItemPrefab;
+        dropChance = newDropChance;
+    }
+
     void Start()
     {
         currentHealth = maxHealth;

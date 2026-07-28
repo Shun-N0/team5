@@ -1281,6 +1281,13 @@ MonoBehaviour:
   tankEnemySpawnChance: 0.2
   stunEnemyPrefab: {fileID: 0}
   stunEnemySpawnChance: 0.15
+  stunEnemyMaxCount: 0
+  shieldEnemyPrefab: {fileID: 0}
+  shieldEnemySpawnInterval: 15
+  shieldEnemyInitialDelay: 3
+  shieldEnemyMaxCount: 0
+  defeatDropItemPrefab: {fileID: 4938575083112966539, guid: 8f402f84b99a74bc1a550e4e173177a4, type: 3}
+  defeatDropChance: 0.3
   warshipFormationPrefab: {fileID: 6100000000000000001, guid: c15a39dc0b2341d5a902e6cacbcb2ce4, type: 3}
   blueWarshipSpawnInterval: 18
   blueWarshipInitialDelay: 9
