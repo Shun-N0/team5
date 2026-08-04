@@ -42,13 +42,26 @@ public class StageManager : MonoBehaviour
 
     void Awake()
     {
+        // ★重複防止処理：新しいシーンのManagerを常に優先する
+        if (Instance != null && Instance != this)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
-        seAudioSource = gameObject.AddComponent<AudioSource>();
+
+        // SE再生用のAudioSourceを準備
+        seAudioSource = GetComponent<AudioSource>();
+        if (seAudioSource == null) seAudioSource = gameObject.AddComponent<AudioSource>();
+        
         nextBossScore = bossIntervalScore; 
     }
 
     void Start()
     {
+        // ★重要：シーンが始まったら必ず時間を動かす
+        Time.timeScale = 1f;
+
+        // リトライ用に今のシーン名を保存
         PlayerPrefs.SetString(SavedSceneKey, SceneManager.GetActiveScene().name);
         PlayerPrefs.Save();
 
@@ -113,7 +126,6 @@ public class StageManager : MonoBehaviour
         }
         else
         {
-            // ★修正：ネスト（入れ子）を解消して TriggerClear を呼ぶ
             TriggerClear();
         }
     }
@@ -125,7 +137,7 @@ public class StageManager : MonoBehaviour
         if (cleared) return;
         cleared = true;
 
-        // ★ステージ進捗の保存
+        // ステージ進捗の保存
         int currentStageNum = 1; 
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName.Contains("01")) currentStageNum = 1;

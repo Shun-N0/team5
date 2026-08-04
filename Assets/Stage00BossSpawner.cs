@@ -28,6 +28,19 @@ public class Stage00BossSpawner : MonoBehaviour
         spawner.AddComponent<Stage00BossSpawner>();
     }
 
+    // ★追加：ステージ0が始まった瞬間に実行される処理
+    private void Start()
+    {
+        // 1. 止まった時間を動かす（リトライ対策）
+        Time.timeScale = 1f;
+
+        // 2. 今のシーン名を「SavedScene」という名前で保存する（これでリトライボタンが動くようになる）
+        PlayerPrefs.SetString("SavedScene", SceneManager.GetActiveScene().name);
+        PlayerPrefs.Save();
+        
+        Debug.Log("ステージ0：シーン名を保存しました - " + SceneManager.GetActiveScene().name);
+    }
+
     private void Update()
     {
         if (spawned || warningStarted) return;
@@ -42,10 +55,11 @@ public class Stage00BossSpawner : MonoBehaviour
     {
         warningStarted = true;
 
-        Stage00MeteorSpawner meteorSpawner = FindObjectOfType<Stage00MeteorSpawner>();
+        // 各種生成機を止める（FindObjectOfTypeは重い処理ですが、ボス出現時1回だけなので許容します）
+        var meteorSpawner = FindObjectOfType<Stage00MeteorSpawner>();
         if (meteorSpawner != null) meteorSpawner.SetSpawningEnabled(false);
 
-        Stage00GateSpawner gateSpawner = FindObjectOfType<Stage00GateSpawner>();
+        var gateSpawner = FindObjectOfType<Stage00GateSpawner>();
         if (gateSpawner != null) gateSpawner.SetSpawningEnabled(false);
 
         GameObject warningObject = CreateWarningUI();
@@ -128,8 +142,8 @@ public class Stage00BossSpawner : MonoBehaviour
         rect.anchoredPosition = Vector2.zero;
         rect.sizeDelta = new Vector2(520f, 120f);
 
-        Stage00WarningBlink warningBlink = warningObject.AddComponent<Stage00WarningBlink>();
-        warningBlink.Initialize(warningText, warningBackground);
+        // Stage00WarningBlink がプロジェクト内に存在する場合のみ追加
+        warningObject.AddComponent<Stage00WarningBlink>();
 
         return warningObject;
     }

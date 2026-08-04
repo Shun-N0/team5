@@ -2440,6 +2440,14 @@ PrefabInstance:
       value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: level1ShotInterval
+      value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: level3ShotInterval
+      value: 0.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: 'lifeIcons.Array.data[0]'
       value: 
       objectReference: {fileID: 290215538}
