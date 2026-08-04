@@ -699,7 +699,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 230, y: 300}
+  m_AnchoredPosition: {x: 250, y: 340}
   m_SizeDelta: {x: 230, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &156140928
@@ -2399,8 +2399,9 @@ MonoBehaviour:
   - {fileID: 900407278}
   - {fileID: 1246032550}
   - {fileID: 5266744}
+  stage0Button: {fileID: 83037473}
   endlessButton: {fileID: 992309155}
-  debugUnlockAll: 1
+  debugUnlockAll: 0
 --- !u!1 &973573341
 GameObject:
   m_ObjectHideFlags: 0

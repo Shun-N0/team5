@@ -1587,12 +1587,12 @@ MonoBehaviour:
   defeatDropItemPrefab: {fileID: 0}
   defeatDropChance: 0
   warshipFormationPrefab: {fileID: 6100000000000000001, guid: c15a39dc0b2341d5a902e6cacbcb2ce4, type: 3}
-  blueWarshipSpawnInterval: 3
-  blueWarshipInitialDelay: 10
+  blueWarshipSpawnInterval: 4
+  blueWarshipInitialDelay: 5
   redWarshipFormationPrefab: {fileID: 6200000000000000001, guid: a24c62874db84de68d0d609c091fbb3b, type: 3}
-  redWarshipSpawnInterval: 5
-  redWarshipInitialDelay: 15
-  initialSpawnInterval: 5
+  redWarshipSpawnInterval: 6
+  redWarshipInitialDelay: 10
+  initialSpawnInterval: 4
   targetEnemyCount: 100
   minSpawnInterval: 0.5
   difficultyInterval: 10
