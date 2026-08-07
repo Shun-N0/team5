@@ -1,16 +1,17 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI; // ボタン制御に必要
+using UnityEngine.UI;
 
 public class TitleManager : MonoBehaviour
 {
     [Header("切り替えるUIパネル")]
-    public GameObject titleLayout;      // タイトルロゴやStartボタンのグループ
-    public GameObject stageSelectPanel; // ステージ選択ボタンのグループ
-    public GameObject howToPlayPanel;   // 遊び方説明パネル
+    public GameObject titleLayout;      
+    public GameObject stageSelectPanel; 
+    public GameObject howToPlayPanel;   
 
     [Header("ステージボタン設定")]
-    public Button[] stageButtons;       // Stage1, 2, 3の順で入れる
+    public Button[] stageButtons;       // Stage1, 2, 3のボタンを順番に入れる
+    public GameObject stage0Button;     // ★追加：全クリア後に出現するステージ0ボタン
     public GameObject endlessButton;    // エンドレスモード用のボタン
 
     [Header("開発者用：全ステージ開放")]
@@ -24,18 +25,15 @@ public class TitleManager : MonoBehaviour
 
     // --- パネル切り替え機能 ---
 
-    // Startボタンが押されたとき
     public void ShowStageSelect()
     {
         if (titleLayout != null) titleLayout.SetActive(false);
         if (stageSelectPanel != null) stageSelectPanel.SetActive(true);
         if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
 
-        // ボタンのロック状態を更新
         UpdateStageButtons();
     }
 
-    // 遊び方ボタンが押されたとき
     public void ShowHowToPlay()
     {
         if (titleLayout != null) titleLayout.SetActive(false);
@@ -43,7 +41,6 @@ public class TitleManager : MonoBehaviour
         if (stageSelectPanel != null) stageSelectPanel.SetActive(false);
     }
 
-    // 戻るボタンが押されたとき
     public void BackToTitle()
     {
         if (titleLayout != null) titleLayout.SetActive(true);
@@ -55,56 +52,56 @@ public class TitleManager : MonoBehaviour
 
     public void UpdateStageButtons()
     {
-        // 保存された進捗を読み込む (0:未クリア, 1:ステ1クリア, 2:ステ2クリア...)
+        // 保存された進捗を読み込む (0:未クリア, 1:ステ1クリア, 2:ステ2クリア, 3:ステ3クリア)
         int progress = PlayerPrefs.GetInt("StageProgress", 0);
 
         for (int i = 0; i < stageButtons.Length; i++)
         {
             if (stageButtons[i] == null) continue;
 
-            // ステージ1(i=0)は常に表示。それ以外は、前のステージをクリアしていれば表示。
+            // 通常のアンロック判定（ステージ1は常に表示。それ以外は前ステージクリアが条件）
             bool isUnlocked = (i == 0) || (progress >= i);
-            
-            // デバッグモードがONなら強制的に表示
             if (debugUnlockAll) isUnlocked = true;
 
-            // ボタンを表示・非表示にする
             stageButtons[i].gameObject.SetActive(isUnlocked);
             stageButtons[i].interactable = true;
         }
 
-        // 全通常ステージクリア（ボタンの数だけクリア）でエンドレスボタンを表示
+        // ★全ステージ（リストに入れた分すべて）をクリアしたかの判定
+        bool allCleared = (progress >= stageButtons.Length) || debugUnlockAll;
+
+        // ★ステージ0ボタンをエンドレスと同じタイミングで出す
+        if (stage0Button != null)
+        {
+            stage0Button.SetActive(allCleared);
+        }
+
+        // エンドレスボタンを出す
         if (endlessButton != null)
         {
-            bool endlessUnlocked = (progress >= stageButtons.Length) || debugUnlockAll;
-            endlessButton.SetActive(endlessUnlocked);
+            endlessButton.SetActive(allCleared);
         }
     }
 
     // --- シーン読み込み機能 ---
 
-    // 通常ステージ用 (引数に 1, 2, 3 を入れる)
     public void LoadStage(int num)
     {
         Time.timeScale = 1f;
+        // 0 を渡せば SampleScene00、1 なら SampleScene01 を読み込む
         SceneManager.LoadScene("SampleScene0" + num);
     }
 
-    // エンドレスモード用
     public void LoadEndless()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("EndlessScene");
     }
 
-    // --- 特殊機能 ---
-
-    // 隠しリセットボタン用
     public void ResetSaveData()
     {
         PlayerPrefs.DeleteAll();
         Debug.Log("すべてのセーブデータを削除しました");
-        // 画面を更新するためにタイトルシーンを読み直す
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

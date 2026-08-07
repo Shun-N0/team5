@@ -1229,11 +1229,11 @@ MonoBehaviour:
   defeatDropChance: 0
   warshipFormationPrefab: {fileID: 6100000000000000001, guid: c15a39dc0b2341d5a902e6cacbcb2ce4, type: 3}
   blueWarshipSpawnInterval: 18
-  blueWarshipInitialDelay: 9
+  blueWarshipInitialDelay: 10
   redWarshipFormationPrefab: {fileID: 6200000000000000001, guid: a24c62874db84de68d0d609c091fbb3b, type: 3}
   redWarshipSpawnInterval: 16
   redWarshipInitialDelay: 4
-  initialSpawnInterval: 3
+  initialSpawnInterval: 5
   targetEnemyCount: 5
   minSpawnInterval: 0.8
   difficultyInterval: 15
@@ -2191,6 +2191,14 @@ PrefabInstance:
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: explosionVolume
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: level1ShotInterval
+      value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
+      propertyPath: level3ShotInterval
+      value: 0.23
       objectReference: {fileID: 0}
     - target: {fileID: 7157244034464084108, guid: 5af2999991ffe463687a33a4c3b7bc7f, type: 3}
       propertyPath: 'lifeIcons.Array.data[0]'
